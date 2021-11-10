@@ -1,16 +1,34 @@
 cabal-version:      2.4
 name:               lambdac
 version:            0.1.0.0
-
 author:             vglfr
 maintainer:         vf.velt@gmail.com
 
-executable lambdac
-  main-is:          
-    Main.hs
+common common
   build-depends:    
-    base == 4.15.0.0
-  hs-source-dirs:
-    app
+    base == 4.15.*,
+    parsec == 3.1.*
   default-language:
     Haskell2010
+
+library
+  import:
+    common
+  exposed-modules:
+    Lambdac
+    Lambdac.Interpreter
+    Lambdac.Parser
+    Lambdac.Printer
+    Lambdac.Syntax
+  hs-source-dirs:
+    src
+
+executable lambdac
+  import:
+    common
+  build-depends:
+    lambdac
+  hs-source-dirs:
+    app
+  main-is:          
+    Main.hs

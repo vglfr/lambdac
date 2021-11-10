@@ -1,4 +1,7 @@
 cradle:
   cabal:
+    - path: "src"
+      component: "lib:lambdac"
+
     - path: "app"
       component: "lambdac:exe:lambdac"
