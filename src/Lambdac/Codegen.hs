@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Codegen where
+module Lambdac.Codegen where
 
 import LLVM.AST
 import qualified LLVM.AST as AST
@@ -10,6 +10,7 @@ import LLVM.Module
 
 import Control.Monad.Except
 import Data.ByteString.Char8 as BS
+import Data.ByteString
 
 int :: Type
 int = IntegerType 32
@@ -35,15 +36,11 @@ defAdd = GlobalDefinition functionDefaults
                 []]
         (Do $ Ret (Just (LocalReference int (Name "result"))) [])
 
-
 module_ :: AST.Module
 module_ = defaultModule
   { moduleName = "basic"
   , moduleDefinitions = [defAdd]
   }
 
-
-toLLVM :: AST.Module -> IO ()
-toLLVM mod = withContext $ \ctx -> do
-  llvm <- withModuleFromAST ctx mod moduleLLVMAssembly
-  BS.putStrLn llvm
+toIR :: AST.Module -> IO ByteString
+toIR mod = withContext $ \ctx -> withModuleFromAST ctx mod moduleLLVMAssembly

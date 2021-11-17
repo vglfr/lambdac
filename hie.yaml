@@ -1,7 +1,10 @@
 cradle:
   cabal:
-    - path: "src"
+    - path: "./src"
       component: "lib:lambdac"
 
-    - path: "app"
-      component: "lambdac:exe:lambdac"
+    - path: "./app"
+      component: "lambdac:exe:lc"
+
+    - path: "./test"
+      component: "lambdac:test:lambdac-test"

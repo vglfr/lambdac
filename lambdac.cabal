@@ -20,6 +20,7 @@ library
     common
   exposed-modules:
     Lambdac
+    Lambdac.Codegen
     Lambdac.Interpreter
     Lambdac.Parser
     Lambdac.Printer
@@ -27,7 +28,7 @@ library
   hs-source-dirs:
     src
 
-executable lambdac
+executable lc
   import:
     common
   build-depends:
@@ -36,3 +37,19 @@ executable lambdac
     app
   main-is:          
     Main.hs
+
+test-suite lambdac-test
+  import:
+    common
+  build-depends:
+    lambdac,
+    hspec == 2.8.*
+  hs-source-dirs:
+    test
+  main-is:
+    Spec.hs
+  other-modules:
+    Spec.Codegen
+    Paths_lambdac
+  type:
+    exitcode-stdio-1.0
