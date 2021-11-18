@@ -13,10 +13,10 @@ testPrinter = describe "Lambdac.Printer" $ do
   it "show Var - base" $ do
     show (Var "x") `shouldBe` "x"
 
-  it "show Var - base one prime" $ do
+  it "show Var - one prime" $ do
     show (Var "x'") `shouldBe` "x'"
 
-  it "show Var - base two primes" $ do
+  it "show Var - two primes" $ do
     show (Var "x''") `shouldBe` "x''"
 
   it "show Abs - one argument" $ do
@@ -28,11 +28,8 @@ testPrinter = describe "Lambdac.Printer" $ do
   it "show Abs - three arguments" $ do
     show (λ "x" (λ "y" (λ "z" "x"))) `shouldBe` "λxyz.x"
 
-  it "show Abs - variable application in body" $ do
+  it "show Abs - application in body" $ do
     show (λ "x" (λ "y" (λ "z" ("x" ⋅ "y" ⋅ "z")))) `shouldBe` "λxyz.xyz"
-
-  it "show Abs - abstraction in body" $ do
-    show (λ "x" (λ "y" (λ "z" "x" ⋅ "y" ⋅ "z"))) `shouldBe` "λxy.(λz.x)yz"
 
   it "show Abs - abstraction in start of body" $ do
     show (λ "x" (λ "y" (λ "z" (λ "u" "v" ⋅ "y" ⋅ "z")))) `shouldBe` "λxyz.(λu.v)yz"

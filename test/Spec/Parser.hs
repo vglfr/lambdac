@@ -43,13 +43,31 @@ testParseAbs :: Spec
 testParseAbs = describe "Lambdac.Parser - Abs" $ do
   let parseAbs' = parse (parseAbs <* eof) "Error parsing abstraction"
 
-  it "parseAbs - simple" $ do
+  it "parseAbs - one argument" $ do
     parseAbs' "λx.x" `shouldBe` Right (λ "x" "x")
+
+  it "parseAbs - two arguments" $ do
+    parseAbs' "λxy.x" `shouldBe` Right (λ "x" (λ "y" "x"))
+
+  it "parseAbs - three arguments" $ do
+    parseAbs' "λxyz.x" `shouldBe` Right (λ "x" (λ "y" (λ "z" "x")))
+
+  it "parseAbs - application in body" $ do
+    parseAbs' "λxyz.xyz" `shouldBe` Right (λ "x" (λ "y" (λ "z" ("x" ⋅ "y" ⋅ "z"))))
+
+  it "parseAbs - abstraction in start of body" $ do
+    parseAbs' "λxyz.(λu.v)yz" `shouldBe` Right (λ "x" (λ "y" (λ "z" (λ "u" "v" ⋅ "y" ⋅ "z"))))
+
+  it "parseAbs - abstraction in middle of body" $ do
+    parseAbs' "λxyz.x(λu.v)z" `shouldBe` Right (λ "x" (λ "y" (λ "z" ("x" ⋅ λ "u" "v" ⋅ "z"))))
+
+  it "parseAbs - abstraction in end of body" $ do
+    parseAbs' "λxyz.xy(λu.v)" `shouldBe` Right (λ "x" (λ "y" (λ "z" ("x" ⋅ "y" ⋅ λ "u" "v"))))
 
   it "parseAbs - no lambda" $ do
     parseAbs' "x.x" `shouldSatisfy` isLeft
 
-  it "parseAbs - no dot" $ do
+  xit "parseAbs - no dot" $ do
     parseAbs' "λxx" `shouldSatisfy` isLeft
 
 testParseApp :: Spec
@@ -73,6 +91,12 @@ testParseApp = describe "Lambdac.Parser - App" $ do
 
   it "parseApp - three abstractions" $ do
     parseApp' "λx.x λx.x λx.x" `shouldBe` Right (λ "x" "x" ⋅ λ "x" "x" ⋅ λ "x" "x")
+
+  it "parseApp - trailing space" $ do
+    parseApp' "x " `shouldSatisfy` isLeft
+
+  it "parseApp - leading space" $ do
+    parseApp' " x" `shouldSatisfy` isLeft
 
     -- (λx.x)(λy.y)
     -- (λx.x)(λy.y)z

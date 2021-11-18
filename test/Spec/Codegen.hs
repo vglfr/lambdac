@@ -8,6 +8,10 @@ import Test.Hspec
 testCodegen :: Spec
 testCodegen = describe "Lambdac.Codegen" $ do
   it "toIR" $ do
-    ans <- toIR module_
+    ans <- toIR . toMod $ defAdd
     out <- BS.readFile "test/output/toIR.ll"
     ans `shouldBe` out
+
+  it "toObj" $ do
+    toObj . toMod $ defMain
+    5 `shouldBe` 5
