@@ -16,12 +16,20 @@ import Data.ByteString.Char8 as BS
 import Data.ByteString
 import System.Process
 
--- standalone abstraction
+import Lambdac.Syntax
+
+-- result to stdout
 -- bootstrap main
 -- nested abstractions
 
+i8 :: Type
+i8 = IntegerType 8
+
 i32 :: Type
 i32 = IntegerType 32
+
+str :: Type
+str = ArrayType 1 i8
 
 defAdd :: Definition
 defAdd = GlobalDefinition functionDefaults
@@ -47,14 +55,13 @@ defAdd = GlobalDefinition functionDefaults
 defMain :: Definition
 defMain = GlobalDefinition functionDefaults
   { name = Name "main"
-  , parameters = ([], False)
   , returnType = i32
   , basicBlocks = [body]
   }
   where
     body = BasicBlock
         (Name "entry")
-        [ Name "result" :=
+        [Name "result" :=
             AST.Add False  -- no signed wrap
                 False  -- no unsigned wrap
                 (ConstantOperand (C.Int 32 1))
@@ -62,12 +69,22 @@ defMain = GlobalDefinition functionDefaults
                 []]
         (Do $ Ret (Just (LocalReference i32 (Name "result"))) [])
 
-toDef :: String -> Definition
-toDef = undefined
+toDef :: Expr -> Definition
+toDef (Abs (Var h) (Var b)) = GlobalDefinition functionDefaults
+  { name = Name "f1"
+  , parameters = ([Parameter str (Name "a1") []], False)
+  , returnType = str
+  , basicBlocks = [body]
+  }
+  where
+    body = BasicBlock
+      (Name "entry")
+      []
+      (Do $ Ret (Just (LocalReference str (Name "a1"))) [])
 
 toMod :: Definition -> AST.Module
 toMod def = defaultModule
-  { moduleName = "basic"
+  { moduleName = "main"
   , moduleDefinitions = [def]
   }
 
@@ -80,5 +97,11 @@ toObj ast = do
     withModuleFromAST ctx ast $ \llvm ->
       withHostTargetMachineDefault $ \target -> do
         writeObjectToFile target (File "bin/test.o") llvm
-        -- check gcc installation
+
+toBin :: AST.Module -> IO ()
+toBin ast = do
+  withContext $ \ctx ->
+    withModuleFromAST ctx ast $ \llvm ->
+      withHostTargetMachineDefault $ \target -> do
+        writeObjectToFile target (File "bin/test.o") llvm
         void $ readProcess "gcc" ["bin/test.o", "-o", "bin/a.out"] ""

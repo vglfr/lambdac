@@ -9,8 +9,8 @@ import Data.Functor (($>))
 import Text.Parsec
 -- import Text.Parsec.Token (parens)
 
-parseLE :: String -> IO Expr
-parseLE = pure . fromRight (Var "e") . parse parseVar ""
+parseProg :: String -> IO Expr
+parseProg = pure . fromRight (Var "e") . parse parseVar ""
 
 parseExpr :: Parsec String () Expr
 parseExpr = try parseApp <|> try parseAbs <|> try parseVar

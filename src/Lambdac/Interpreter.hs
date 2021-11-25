@@ -6,6 +6,16 @@ import Lambdac.Syntax
 import Data.Functor (($>))
 import Data.List ((\\), nub, singleton)
 
+eval :: Expr -> Expr
+eval e = do
+  case alpha e of
+    Just e' -> eval e'
+    Nothing -> case beta e of
+                 Just e' -> if isAlpha e e'
+                            then e
+                            else eval e'
+                 Nothing -> e
+
 evalPrint :: Expr -> IO Expr
 evalPrint e = do
   putStr "⋅ " >> print e

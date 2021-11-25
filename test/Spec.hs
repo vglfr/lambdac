@@ -12,23 +12,8 @@ main = hspec $ do
   testParser
   testPrinter
 
---{-# LANGUAGE OverloadedStrings #-}
 -- main :: IO Expr
 -- main = do
-  -- eval "x"
-  -- eval $ λ "x" "x" ⋅ "y"
-  -- eval $ λ "x" "z" ⋅ "y"
-  -- eval $ λ "x" (λ "y" "x") ⋅ "u"
-  -- eval $ λ "x" (λ "y" "x") ⋅ "u" ⋅ "v"
-  -- eval $ λ "x" (λ "y" "y") ⋅ "u"
-  -- eval $ λ "x" (λ "y" "y") ⋅ "u" ⋅ "v"
-  -- eval $ λ "x" (λ "y" "y") ⋅ "u" ⋅ "v" ⋅ "w"
-  -- eval $ λ "x" (λ "y" ("x" ⋅ "y")) ⋅ λ "z" (λ "c" "v" ⋅ "z")
-  -- eval $ λ "x" ("x" ⋅ "x") ⋅ λ "x" ("x" ⋅ "x")
-  -- eval $ λ "x" ("x" ⋅ "x") ⋅ λ "y" ("y" ⋅ "y")
-  -- eval $ λ "x" "x" ⋅ "x"
-  -- eval $ λ "x" (λ "y" ("x" ⋅ "y")) ⋅ λ "z" (λ "c" "y" ⋅ "z")
-
   -- putStr "y -- " >> print (λ "x" "y")
   -- print $ isBound "y" (λ "x" "y")
   -- putStr "x -- " >> print (λ "x" "x")

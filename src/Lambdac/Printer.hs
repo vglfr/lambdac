@@ -2,11 +2,6 @@ module Lambdac.Printer where
 
 import Lambdac.Syntax
 
-import Data.String (IsString (..))
-
-instance IsString Expr where
-  fromString = Var
-
 instance Show Expr where
   show (Var x)   = x
   show (Abs h b) = "λ" ++ show h ++ showAbs b
