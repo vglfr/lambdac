@@ -1,6 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Lambdac.Printer where
 
 import Lambdac.Syntax
+
+import Control.Monad (join)
 
 instance Show Expr where
   show (Var x)   = x
@@ -26,18 +30,21 @@ instance Repr Expr where
 
 {-
 
-λx.xx λy.yy
-
-     ∙
-    / \
-   /   \
-  λ     λ
- / \   / \
-x   ∙ y   ∙
-   / \   / \
-  x   x y   y
-
 λx.x(λz.z) λy.(λz.z)y
+
+∙
+├ λ
+│ ├ x
+│ └ ∙
+│   ├ x
+│   └ λ z z
+└ λ
+  ├ y
+  └ ∙
+    ├ λ z z
+    └ y
+
+Bad:
 
        ∙
       / \
@@ -51,32 +58,6 @@ x   ∙     y   ∙
   x   λ     λ   y
      / \   / \
     z   z z   z
-
-[
-  [∙]
-  [λ, λ]
-  [x, ∙, y, ∙]
-  [x, λ, λ, y]
-  [z, z, z, z]
-]
-
-1-offset
-[
-  [0]
-  [-1, 1]
-  [-2, 0, 0, 2]
-  [-1, 1, 1, 3]
-  [ 0, 2, 0, 2]
-]
-
-offset * 2
-[
-  [0]
-  [-2, 2]
-  [-4, 0, 0, 4]
-  [-2, 2, 2, 6]
-  [ 0, 4, 0, 4]
-]
 
 [
   [0]
@@ -94,60 +75,120 @@ offset * 2
   [ 0, 4, 6, 10]
 ]
 
-Bad:
+  ┌ x
+┌ λ 
+│ │ ┌ x
+│ └ ∙
+│   └ λ z z
+∙ 
+│ ┌ y
+└ λ
+  │ ┌ λ z z
+  └ ∙
+    └ y
 
-       ∙
-      / \
-     /   λ
-    /   / \
-   /   y   ∙
-  λ       / \
- / \     λ   y
-x   ∙   / \
-   / \ z   z
-  x   λ
-     / \
-    z   z
+∙
+├ λ
+│ ├ x
+│ └ ∙
+│   ├ x
+│   └ λ
+│     ├ z
+│     └ z
+└ λ
+  ├ y
+  └ ∙
+    ├ λ
+    │ ├ z
+    │ └ z
+    └ y
 
-       ∙
-  λ         λ
- / \       / \
-x   ∙     y   ∙
-   / \       / \
-  x   λ     λ   y
-     / \   / \
-    z   z z   z
+∙
+├─ λ
+│  ├─ x
+│  └─ ∙
+│     ├─ x
+│     └─ λ
+│        ├─ z
+│        └─ z
+└─ λ
+   ├─ y
+   └─ ∙
+      ├─ λ
+      │  ├─ z
+      │  └─ z
+      └─ y
 
-     ∙
-  λ     λ
- / \   / \
-x   ∙ y   ∙
-   / \   / \
-  x   x y   y
-
-      ∙
-     / \
-    /   \
-   /     \
-  λ       λ
- / \     / \
-x   ∙   y   ∙
-   / \     / \
-  x   x   y   y
-
-   ∙
- λ    λ
-x ∙  y ∙
- x x  y y
+  ┌ x
+┌ λ 
+│ │ ┌ x
+│ └ ∙
+│   │ ┌ z
+│   └ λ
+∙     └ z
+│ ┌ y
+└ λ   ┌ z
+  │ ┌ λ
+  │ │ └ z
+  └ ∙
+    └ y
 
  -}
 
+data Slash = S Int | B Int
+
+instance Show Slash where
+  show (S _) = "\ESC[30m/\ESC[m"
+  show (B _) = "\ESC[30m\\\ESC[m"
+
 type Elements   = [[String]]
 type Offsets    = [[Int]]
-type RowOffsets = [Int]
+type Slashes    = [[Slash]]
 
-elements :: Elements
-elements =
+root :: Expr -> String
+root (Var x)   = x
+root (Abs _ _) = "λ"
+root (App _ _) = "⋅"
+
+leaves :: Expr -> [Expr]
+leaves (Var x)   = []
+leaves (Abs h b) = [h, b]
+leaves (App f x) = [f, x]
+
+expr' :: Expr
+-- expr' = λ "x" (λ "y" "x")
+-- expr' = λ "x" "x"
+expr' = λ "x" ("x" ⋅ λ "z" "z") ⋅ λ "y" (λ "z" "z" ⋅ "y")
+
+elements :: Expr -> Elements
+elements e = go [] [e]
+ where
+  go acc [] = acc
+  go acc es = go (acc ++ [map root es]) (concatMap leaves es)
+
+offsets :: Expr -> Offsets
+offsets e = go [] [(e,0)]
+ where
+  go acc [] = acc
+  go acc es = go (acc ++ [map snd es]) (concatMap leaves' es)
+
+  leaves' (Var _, n) = []
+  leaves' (    e, n) = let ls = leaves e
+                        in [(head ls, n-2), (last ls, n+2)]
+
+balance :: Offsets -> Offsets
+balance os = let ls = last os
+                 ds = diff ls
+              in os
+
+diff :: [Int] -> [Int]
+diff xs = 0 : map (\(e,s) -> e - s) (zip (tail xs) xs)
+
+-- slashes :: Expr -> Slashes
+-- slashes = undefined
+
+elements' :: Elements
+elements' =
   [ ["∙"]
   , ["λ", "λ"]
   , ["x", "∙", "y", "∙"]
@@ -155,14 +196,8 @@ elements =
   , ["z", "z", "z", "z"]
   ]
 
-offsets :: Offsets
-offsets =
-  -- [ [0]
-  -- , [-1, 1]
-  -- , [-2, 0, 0, 2]
-  -- , [-1, 1, 1, 3]
-  -- , [ 0, 2, 0, 2]
-  -- ]
+offsets' :: Offsets
+offsets' =
   [ [3]
   , [-2, 8]
   , [-4, 0, 6, 10]
@@ -170,21 +205,26 @@ offsets =
   , [ 0, 4, 6, 10]
   ]
 
-rowOffsets :: [Int]
-rowOffsets = [5, 2, 2, 2, 0]
+slashes' :: Slashes
+slashes' =
+  [ [S 0]
+  , [S (-3), B (-1), S 7, B 9]
+  , [S (-1), B   1,  S 9, B 11]
+  , [S   1,  B   3,  S 7, B 9]
+  , [S 0]
+  ]
 
-draw :: Elements -> Offsets -> RowOffsets -> IO ()
-draw es os rs = mapM_ f (zip3 es os rs)
+draw :: Elements -> Offsets -> Slashes -> IO ()
+draw es os ss = mapM_ f (zip3 es os ss)
  where
-  f (es',os',r) = do
+  f (es',os',ss') = do
     let o  = head os'
         ds = map (\(e,s) -> e - s - 1) $ zip (tail os') os'
         s  = replicate (5 + head os') ' ' ++ head es' ++ concatMap offset (zip (tail es') ds)
-        s' = rowOffset r
+        so  = map (\s -> case s of (S n) -> n; (B n) -> n) ss'
+        ds' = map (\(e,s) -> e - s - 1) $ zip (tail so) so
+        s'  = replicate (5 + head so) ' ' ++ show (head ss') ++ concatMap offsetS (zip (tail ss') ds')
     putStrLn s
     putStrLn s'
-  offset (e,o) = replicate o ' ' ++ e
-  rowOffset n = case n of
-                  5 -> "  / \\\n /   \\\n/     \\"
-                  2 -> "/ \\"
-                  _ -> ""
+  offset  (e,o) = replicate o ' ' ++ e
+  offsetS (s,o) = replicate o ' ' ++ show s
