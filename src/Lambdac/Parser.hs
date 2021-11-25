@@ -9,11 +9,28 @@ import Data.Functor (($>))
 import Text.Parsec
 -- import Text.Parsec.Token (parens)
 
-parseProg :: String -> IO Expr
-parseProg = pure . fromRight (Var "e") . parse parseVar ""
+data Repl
+  = Tree Expr
+  | Repr Expr
+  | Eval Expr
+
+parseLine :: String -> IO Repl
+parseLine = pure . fromRight (Tree (Var "e")) . parse parseRepl ""
+
+parseRepl :: Parsec String () Repl
+parseRepl = try parseTree <|> try parseRepr <|> parseEval
+
+parseTree :: Parsec String () Repl
+parseTree = string ":t " >> Tree <$> parseExpr
+
+parseRepr :: Parsec String () Repl
+parseRepr = string ":r " >> Repr <$> parseExpr
+
+parseEval :: Parsec String () Repl
+parseEval = Eval <$> parseExpr
 
 parseExpr :: Parsec String () Expr
-parseExpr = try parseApp <|> try parseAbs <|> try parseVar
+parseExpr = try parseApp <|> try parseAbs <|> parseVar
 
 parseVar :: Parsec String () Expr
 parseVar = Var <$> (base <> primes)
@@ -24,7 +41,7 @@ parseVar = Var <$> (base <> primes)
 parseAbs :: Parsec String () Expr
 parseAbs = Abs <$> parseHead <*> parseTail
  where
-  parseHead = char 'λ' *> parseVar
+  parseHead = oneOf "λ\\" *> parseVar
   parseTail = parseAbsCont <|> parseBody
   parseAbsCont = Abs <$> parseVar <*> parseTail
   parseBody = do
