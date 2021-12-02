@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 
 module Lambdac.Printer where
 
@@ -42,24 +43,42 @@ instance Repr Expr where
     ├ λ z z
     └ y
 
+
+│ ├ simp ->
+│ └ whatever
+
+│ └ simp ->
+└ whatever
+
+│ ├ not simp ->
+│ │ ├
+
+│ └ not simp ->
+│   ├
+
  -}
 
---           ├        │         -- └ on pop from Glyphs
-data Glyph = VR Int | VV Int deriving Show
+data Glyph = VR Int | VV Int | UR Int deriving Show
 type Glyphs = [Glyph]
-
-expr' :: Expr
-expr' = λ "x" (λ "y" "x")
--- expr' = λ "x" "x"
--- expr' = "x"
--- expr' = λ "x" ("x" ⋅ λ "z" "z") ⋅ λ "y" (λ "z" "z" ⋅ "y")
 
 type Frame = (Expr, Int)
 type Stack = [Frame]
 
+offset :: Glyph -> Int
+offset (VR n) = n
+offset (VV n) = n
+offset (UR n) = n
+
+glyph :: Glyph -> String
+glyph (VR _) = "├ "
+glyph (VV _) = "│ "
+glyph (UR _) = "└ "
+
+isVR :: Glyph -> Bool
+isVR (VR _) = True
+isVR _      = False
+
 tree :: Expr -> String
--- tree = unlines . go [] . pure . (,0)
--- tree e = unlines . go [] $ [(e,0)]
 tree e = go [] [(e,0)] []
  where
   go :: [String] -> Stack -> Glyphs -> String
@@ -68,13 +87,23 @@ tree e = go [] [(e,0)] []
                  in go (l : ls) fs' gs'
 
 line :: Stack -> Glyphs -> (String, Stack, Glyphs)
-line (a:as) gs = let (s,as',gs') = f a gs
+line (a:as) gs = let (s,as',gs') = draw a gs
                   in (s, as' ++ as, gs')
  where
-  f :: Frame -> Glyphs -> (String, [Frame], Glyphs)
-  f (e,o) gs = if simp e
-                  then (skeleton ur o ++ leaf e, [], gs) -- └
-                  else (skeleton vr o ++ root e, map (\x -> (x,o+2)) (leaves e), gs ++ [VR o]) -- ├
+  draw :: Frame -> Glyphs -> (String, [Frame], Glyphs)
+  draw (e,o) gs = if simp e
+                     then (glyphs gs o ++ leaf e, [], next gs True)
+                     else (glyphs gs o ++ root e, map (, o+2) (leaves e), next gs False ++ [VR o])
+
+  next :: Glyphs -> Bool -> Glyphs
+  next [] _ = []
+  next gs isSimp
+    | isSimp &&      isVR (last gs)  = init gs ++ [UR $ offset $ last gs]
+    | isSimp && not (isVR (last gs)) = if null (init gs)
+                                          then []
+                                          else (init . init) gs ++ [UR $ offset . last . init $ gs]
+    | not isSimp &&      isVR (last gs)  = init gs ++ [VV $ offset $ last gs]
+    | not isSimp && not (isVR (last gs)) = init gs
 
 skeleton :: String -> Int -> String
 skeleton cs n =
@@ -82,45 +111,16 @@ skeleton cs n =
      then replicate n ' '
      else replicate (n-2) ' ' ++ cs
 
-vv :: String
-vv = "│ "
-
-vr :: String
-vr = "├ "
-
-ur :: String
-ur = "└ "
-
-sh :: String
-sh = "\ESC[30m"
-
-eh :: String
-eh = "\ESC[m"
-
-offset :: Glyph -> Int
-offset (VR n) = n
-offset (VV n) = n
-
-glyphs' :: Glyphs
--- glyphs' = [VR 0]
--- glyphs' = [VV 0, VR 2]
-glyphs' = [VV 0, VV 4, VV 8, VR 10]
-
 glyphs :: Glyphs -> Int -> String
-glyphs (g:gs) o = concat $ drawHead g : map drawTail (zip gs (g:gs)) ++ [offset']
+glyphs [] o = replicate o ' '
+glyphs gs o =
+  let start = "\ESC[30m"
+      end   = "\ESC[m"
+      padding = replicate (o - offset (last gs) - 2) ' '
+   in start ++ concat (zipWith draw gs (VR (-2) : gs)) ++ padding ++ end
  where
-  drawHead :: Glyph -> String
-  drawHead (VR n) = replicate n ' ' ++ vr
-  drawHead (VV n) = replicate n ' ' ++ vv
-
-  drawTail :: (Glyph, Glyph) -> String
-  drawTail (VR e, s) = replicate (e - offset s - 2) ' ' ++ vr
-  drawTail (VV e, s) = replicate (e - offset s - 2) ' ' ++ vv
-
-  offset' :: String
-  offset' = if null gs
-               then ""
-               else replicate (o - offset (last gs) - 2) ' '
+  draw :: Glyph -> Glyph -> String
+  draw e s = replicate (offset e - offset s - 2) ' ' ++ glyph e
 
 simp :: Expr -> Bool
 simp (Var _) = True
