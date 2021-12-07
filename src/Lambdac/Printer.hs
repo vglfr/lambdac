@@ -27,37 +27,6 @@ instance Repr Expr where
   -- tree (Var x)   = x
   -- tree (Abs h b) = undefined
 
-{-
-
-λx.x(λz.z) λy.(λz.z)y
-
-∙
-├ λ
-│ ├ x
-│ └ ∙
-│   ├ x
-│   └ λ z z
-└ λ
-  ├ y
-  └ ∙
-    ├ λ z z
-    └ y
-
-
-│ ├ simp ->
-│ └ whatever
-
-│ └ simp ->
-└ whatever
-
-│ ├ not simp ->
-│ │ ├
-
-│ └ not simp ->
-│   ├
-
- -}
-
 data Glyph = VR Int | VV Int | UR Int deriving Show
 type Glyphs = [Glyph]
 
