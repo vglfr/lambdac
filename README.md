@@ -1,2 +1,3 @@
- :t - tree
- :r - repr
+:p - pprint
+:t - tree
+:r - repr

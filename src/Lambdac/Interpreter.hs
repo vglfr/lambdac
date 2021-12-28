@@ -3,8 +3,19 @@ module Lambdac.Interpreter where
 import Lambdac.Printer
 import Lambdac.Syntax
 
-import Data.Functor (($>))
 import Data.List ((\\), nub, singleton)
+
+-- data RType = Alpha | Beta
+
+-- step :: Expr -> Maybe (Expr, RType, Expr, Expr)
+-- step = undefined
+
+-- try alpha
+-- if successful then Just alpha result
+-- otherwise try beta
+-- if successful then Just beta result
+-- otherwise check 
+-- if alpha equivalent then Nothing
 
 eval :: Expr -> Expr
 eval e = do
@@ -16,22 +27,26 @@ eval e = do
                             else eval e'
                  Nothing -> e
 
-evalPrint :: Expr -> IO Expr
+evalPrint :: Expr -> IO ()
 evalPrint e = do
-  putStr "⋅ " >> print e
+  putStr "-> " >> print e
   case alpha e of
     Just e' -> evalPrint e'
     Nothing -> case beta e of
                  Just e' -> if isAlpha e e'
-                            then putStrLn "ω" >> putStrLn "" $> e
+                            then putStrLn "ω" >> putStrLn ""
                             else evalPrint e'
-                 Nothing -> putStrLn "" $> e
+                 Nothing -> putStrLn ""
 
+--                        (e'  , f   , t   )
+-- alpha :: Expr -> Maybe (Expr, Expr, Expr)
 alpha :: Expr -> Maybe Expr
 alpha (App f x) = let f' = foldr rename f (free x)
                   in if f == f' then Nothing else Just (App f' x)
 alpha _ = Nothing
 
+--                       (e'  , f   , t   )
+-- beta :: Expr -> Maybe (Expr, Expr, Expr)
 beta :: Expr -> Maybe Expr
 beta (Var _)   = Nothing
 beta (Abs h b) = case b of

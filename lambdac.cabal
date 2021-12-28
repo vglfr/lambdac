@@ -21,7 +21,7 @@ library
     common
   exposed-modules:
     Lambdac
-    Lambdac.Codegen
+    -- Lambdac.Codegen
     Lambdac.Combinators
     Lambdac.Interpreter
     Lambdac.Parser
@@ -51,7 +51,7 @@ test-suite lambdac-test
   main-is:
     Spec.hs
   other-modules:
-    Spec.Codegen
+    -- Spec.Codegen
     Paths_lambdac
   type:
     exitcode-stdio-1.0

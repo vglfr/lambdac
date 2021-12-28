@@ -10,7 +10,8 @@ import Text.Parsec
 -- import Text.Parsec.Token (parens)
 
 data Repl
-  = Tree Expr
+  = PPrint Expr
+  | Tree Expr
   | Repr Expr
   | Eval Expr
 
@@ -18,7 +19,10 @@ parseLine :: String -> IO Repl
 parseLine = pure . fromRight (Tree (Var "e")) . parse parseRepl ""
 
 parseRepl :: Parsec String () Repl
-parseRepl = try parseTree <|> try parseRepr <|> parseEval
+parseRepl = try parsePPrint <|> try parseTree <|> try parseRepr <|> parseEval
+
+parsePPrint :: Parsec String () Repl
+parsePPrint = string ":p " >> PPrint <$> parseExpr
 
 parseTree :: Parsec String () Repl
 parseTree = string ":t " >> Tree <$> parseExpr

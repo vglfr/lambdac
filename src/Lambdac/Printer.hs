@@ -5,6 +5,16 @@ module Lambdac.Printer where
 
 import Lambdac.Syntax
 
+{-
+
+         λxy.xz y u
+α [y'/y] λxy'.xz y u
+β [y /x] λy'.yz u
+β [y'/u] yz
+         yz
+
+-}
+
 instance Show Expr where
   show (Var x)   = x
   show (Abs h b) = "λ" ++ show h ++ showAbs b
@@ -100,12 +110,12 @@ simp _ = False
 leaf :: Expr -> String
 leaf (Var x) = x
 leaf (Abs h b) = unwords ["λ", show h, show b]
-leaf (App f x) = unwords [show f, "∙", show x]
+leaf (App f x) = unwords [show f, "@", show x]
 
 root :: Expr -> String
 root (Var x)   = x
 root (Abs _ _) = "λ"
-root (App _ _) = "∙"
+root (App _ _) = "@"
 
 leaves :: Expr -> [Expr]
 leaves (Var x)   = []

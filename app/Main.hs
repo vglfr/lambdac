@@ -9,11 +9,12 @@ import System.IO (hFlush, stdout)
 
 main :: IO Repl
 main = ps1 >> getLine >>= parseLine >>= exec >> main
--- main = ps1 >> getLine >>= parseProg >>= evalPrint >> main
  where
   ps1 = putStr "> " >> hFlush stdout
-  exec x = case x of
-    Tree e -> putStrLn (tree e) >> pure x
-    Repr e -> putStrLn (repr e) >> pure x
-    Eval e -> print e >> pure x
-    -- Eval e -> evalPrint e >> pure x
+  exec x = do
+    case x of
+      PPrint e -> print e
+      Tree e -> putStrLn (tree e)
+      Repr e -> putStrLn (repr e)
+      Eval e -> evalPrint e
+    pure x
