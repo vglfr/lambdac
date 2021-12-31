@@ -11,8 +11,8 @@ data Expr
 λ :: Expr -> Expr -> Expr
 λ = Abs
 
-(•) :: Expr -> Expr -> Expr
-(•) = App
+(∘) :: Expr -> Expr -> Expr
+(∘) = App
 
 instance IsString Expr where
   fromString = Var

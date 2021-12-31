@@ -3,7 +3,7 @@
 module Spec.Printer where
 
 import Lambdac.Printer
-import Lambdac.Syntax ((•), λ, Expr(Var))
+import Lambdac.Syntax ((∘), λ, Expr(Var))
 
 import Data.ByteString as BS
 import Test.Hspec
@@ -29,40 +29,40 @@ testPrinter = describe "Lambdac.Printer" $ do
     show (λ "x" (λ "y" (λ "z" "x"))) `shouldBe` "λxyz.x"
 
   it "show Abs - application in body" $ do
-    show (λ "x" (λ "y" (λ "z" ("x" • "y" • "z")))) `shouldBe` "λxyz.xyz"
+    show (λ "x" (λ "y" (λ "z" ("x" ∘ "y" ∘ "z")))) `shouldBe` "λxyz.xyz"
 
   it "show Abs - abstraction in start of body" $ do
-    show (λ "x" (λ "y" (λ "z" (λ "u" "v" • "y" • "z")))) `shouldBe` "λxyz.(λu.v)yz"
+    show (λ "x" (λ "y" (λ "z" (λ "u" "v" ∘ "y" ∘ "z")))) `shouldBe` "λxyz.(λu.v)yz"
 
   it "show Abs - abstraction in middle of body" $ do
-    show (λ "x" (λ "y" (λ "z" ("x" • λ "u" "v" • "z")))) `shouldBe` "λxyz.x(λu.v)z"
+    show (λ "x" (λ "y" (λ "z" ("x" ∘ λ "u" "v" ∘ "z")))) `shouldBe` "λxyz.x(λu.v)z"
 
   it "show Abs - abstraction in end of body" $ do
-    show (λ "x" (λ "y" (λ "z" ("x" • "y" • λ "u" "v")))) `shouldBe` "λxyz.xy(λu.v)"
+    show (λ "x" (λ "y" (λ "z" ("x" ∘ "y" ∘ λ "u" "v")))) `shouldBe` "λxyz.xy(λu.v)"
 
   it "show Abs - λxyz.x(λuv.v)z" $ do
-    show (λ "x" (λ "y" (λ "z" ("x" • λ "u" (λ "v" "v") • "z")))) `shouldBe` "λxyz.x(λuv.v)z"
+    show (λ "x" (λ "y" (λ "z" ("x" ∘ λ "u" (λ "v" "v") ∘ "z")))) `shouldBe` "λxyz.x(λuv.v)z"
 
   it "show Abs - λxyz.x(λu.(λv.v)w)z" $ do
-    show (λ "x" (λ "y" (λ "z" ("x" • λ "u" (λ "v" "v" • "w") • "z")))) `shouldBe` "λxyz.x(λu.(λv.v)w)z"
+    show (λ "x" (λ "y" (λ "z" ("x" ∘ λ "u" (λ "v" "v" ∘ "w") ∘ "z")))) `shouldBe` "λxyz.x(λu.(λv.v)w)z"
 
   it "show Abs - λxyz.x(λuv.vw)z" $ do
-    show (λ "x" (λ "y" (λ "z" ("x" • λ "u" (λ "v" ("v" • "w")) • "z")))) `shouldBe` "λxyz.x(λuv.vw)z"
+    show (λ "x" (λ "y" (λ "z" ("x" ∘ λ "u" (λ "v" ("v" ∘ "w")) ∘ "z")))) `shouldBe` "λxyz.x(λuv.vw)z"
 
   it "show App - two variables" $ do
-    show ("x" • "y") `shouldBe` "x y"
+    show ("x" ∘ "y") `shouldBe` "x y"
 
   it "show App - three variables" $ do
-    show ("x" • "y" • "z") `shouldBe` "x y z"
+    show ("x" ∘ "y" ∘ "z") `shouldBe` "x y z"
 
   it "show App - abstraction and variable" $ do
-    show (λ "x" "x" • "x") `shouldBe` "λx.x x"
+    show (λ "x" "x" ∘ "x") `shouldBe` "λx.x x"
 
   it "show App - variable and abstraction" $ do
-    show ("x" • λ "x" "x") `shouldBe` "x λx.x"
+    show ("x" ∘ λ "x" "x") `shouldBe` "x λx.x"
 
   it "show App - two abstractions" $ do
-    show (λ "x" (λ "y" ("x" • "y")) • λ "z" (λ "c" "y" • "z")) `shouldBe` "λxy.xy λz.(λc.y)z"
+    show (λ "x" (λ "y" ("x" ∘ "y")) ∘ λ "z" (λ "c" "y" ∘ "z")) `shouldBe` "λxy.xy λz.(λc.y)z"
 
   it "show App - three abstractions" $ do
-    show (λ "x" "x" • λ "y" "y" • λ "z" "z") `shouldBe` "λx.x λy.y λz.z"
+    show (λ "x" "x" ∘ λ "y" "y" ∘ λ "z" "z") `shouldBe` "λx.x λy.y λz.z"

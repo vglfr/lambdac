@@ -5,6 +5,10 @@ import Lambdac.Syntax
 
 import Data.List ((\\), nub, singleton)
 
+-- 2 types of evaluation
+-- - lazy  - do not recurse into functions: λx.(λy.y)z  ->  λx.(λy.y)z
+-- - eager - do     recurse into functions: λx.(λy.y)z  ->  λx.z
+
 -- data RType = Alpha | Beta
 
 -- step :: Expr -> Maybe (Expr, RType, Expr, Expr)

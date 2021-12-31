@@ -1,38 +1,12 @@
-# Examples
+{-# LANGUAGE OverloadedStrings #-}
 
-Expression examples.
+module Lambdac.Examples where
 
-## Var:
+import Lambdac.Syntax
+import Lambdac.Typechecker
 
-#### `x -> x` (v1)
+{- λxyz.x -> λxyz.x
 
-```
-x
-```
-
-## Abs:
-
-#### `λx.x -> λx.x` (f1)
-
-```
-  λ
- / \
-x   x
-```
-
-#### `λxy.x -> λxy.x` (f2)
-
-```
-  λ
- / \
-x   λ
-   / \
-  y   x
-```
-
-#### `λxyz.x -> λxyz.x` (f3)
-
-```
   λ
  / \
 x   λ
@@ -40,11 +14,15 @@ x   λ
   y   λ
      / \
     z   x
-```
+-}
+f1 :: Expr
+f1 = λ "x" (λ "y" (λ "z" "x"))
 
-#### `λxyz.xyz -> λxyz.xyz` (f4)
+f1' :: TExpr
+f1' = λ' "1" (λ' "2" (λ' "3" "1"))
 
-```
+{- λxyz.xyz -> λxyz.xyz
+
   λ
  / \
 x   λ
@@ -56,8 +34,12 @@ x   λ
       @   z
      / \
     x   y
-```
+-}
+f2 :: Expr
+f2 = λ "x" (λ "y" (λ "z" ("x" ∘ "y" ∘ "z")))
 
+-- f2' :: TExpr
+-- f2' = λ' "1" (λ' "y" (λ' "z" ("x" • "y" • "z")))
 
 -- λx.(λy.xy)
 -- λx.xxx
@@ -73,57 +55,60 @@ x   λ
 -- λxyz.x(λu.v)z
 -- λxyz.xy(λu.v)
 
-## App:
+{- x x -> x x
 
-#### `x x -> x x` (a1)
-
-```
   @
  / \
 x   x
-```
+-}
+a1 :: Expr
+a1 = "x" ∘ "x"
 
-#### `x x x -> x x x` (a2)
+-- a2 :: TExpr
+-- a2 = "0" • "0"
 
-```
+{- x x x -> x x x
+
     @
    / \
   @   x
  / \
 x   x
-```
+-}
+a2 :: Expr
+a2 = "x" ∘ "x" ∘ "x"
 
-#### `λx.x x -> x` (a3)
+{- λx.x x -> x
 
-```
     @
    / \
   λ   x
  / \
 x   x
-```
+-}
+a3 :: Expr
+a3 = λ "x" "x" ∘ "x"
 
 -- x λx.x
-
 -- λx.x λx.x
-
 -- λx.x λy.y
-
 -- (λz.zz)(λy.yy)
-
 -- λx.x λx.x λx.x
 
+{- (λx.x λy.y) (λz.z u) -> u
 
-#### `(λx.x λy.y) (λz.z u) -> u` (a4)
-
-```
            @
      @          @
    /   \       / \
   λ     λ     λ   u
  / \   / \   / \
 x   x y   y z   z
-```
+-}
+a4 :: Expr
+a4 = (λ "x" "x" ∘ λ "y" "y") ∘ (λ "z" "z" ∘ "u")
+
+a4' :: TExpr
+a4' = (λ' "1" "1" • λ' "1" "1") • (λ' "1" "1" • "0")
 
 -- (λx.x)(λy.y)z
 -- ((λx.x)(λy.y))z
@@ -132,9 +117,8 @@ x   x y   y z   z
 -- (λy.λz(λn.λn.n)z(yz))(λp.p)
 -- λz(λn.z)((λp.p)z)
 
-#### `λx.xxx z` (a5)
+{- λx.xxx z -> z z z
 
-```
     @
    / \
   λ   z
@@ -144,7 +128,12 @@ x   @
   @   x
  / \
 x   x
-```
+-}
+a5 :: Expr
+a5 = λ "x" ("x" ∘ "x" ∘ "x") ∘ "z"
+
+a5' :: TExpr
+a5' = λ' "1" ("1" • "1" • "1") • "0"
 
 -- (λabc.cba)zz(λwv.w)
 -- (λx.λy.xyy)(λa.a)b
@@ -154,7 +143,7 @@ x   x
 -- (λa.aa)(λb.ba)c
 -- (λxyz.xz(yz))(λx.z)(λx.a)
 
-## Old
+-- Old
 
 -- (λx.x)(λy.y)
 -- (λx.x)(λy.y)z

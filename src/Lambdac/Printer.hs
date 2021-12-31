@@ -7,6 +7,41 @@ import Lambdac.Syntax
 
 {-
 
+-- tree  :: Tree -> String
+
+           depth
+             ↓
+-- treeN :: Int -> Tree -> String
+-- tree5 ::        Tree -> String
+       ↑
+      TH?
+
+                LRRRLRL-like path to start
+                            ↓
+-- treeP :: Int -> Tree -> Path -> String
+
+                       @
+              ⡀ ⠄ ⠂ ⠁     ⠈ ⠐ ⠠ ⢀                -- 11
+           @                       @
+       ⡀ ⠁   ⠈ ⢀               ⡀ ⠁   ⠈ ⢀         -- 5
+     @           @           @           @
+   ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀     -- 2
+  @     @     @     @     @     @     @     @
+ / \   / \   / \   / \   / \   / \   / \   / \   -- 1
+x   x y   y z   z u   u v   v w   w i   i j   j
+
+  x    x     x      x
+ /   ⡀⠁   ⡀⋅⠁   ⡀⠄⠂⠁
+x   x    x     x
+
+  x    x       x          x               x
+ /   ⡀⠁    ⡀⋅⠁      ⡀⠄⠂⠁        ⡀ ⠄ ⠂ ⠁
+x   x    x       x          x
+
+-}
+
+{-
+
          λxy.xz y u
 α [y'/y] λxy'.xz y u
 β [y /x] λy'.yz u

@@ -4,32 +4,43 @@ module Lambdac.Combinators where
 
 import Lambdac.Syntax
 
-_I :: Expr
-_I = λ "x" "x"
+{- λx.x -> λx.x
 
-_K :: Expr
-_K = λ "x" (λ "y" "x")
+  λ
+ / \
+x   x
+-}
+i :: Expr
+i = λ "x" "x"
 
-_S :: Expr
-_S = λ "x" (λ "y" (λ "z" ("x" • "z" • ("y" • "z"))))
+{- λxy.x -> λxy.x
 
-_B :: Expr
-_B = λ "x" (λ "y" (λ "z" ("x" • ("y" • "z"))))
+  λ
+ / \
+x   λ
+   / \
+  y   x
+-}
+k :: Expr
+k = λ "x" (λ "y" "x")
 
-_C :: Expr
-_C = λ "x" (λ "y" (λ "z" ("x" • "z" • "y")))
+s :: Expr
+s = λ "x" (λ "y" (λ "z" ("x" ∘ "z" ∘ ("y" ∘ "z"))))
 
-_W :: Expr
-_W = λ "x" (λ "y" ("x" • "y" • "y"))
+b :: Expr
+b = λ "x" (λ "y" (λ "z" ("x" ∘ ("y" ∘ "z"))))
 
-_U :: Expr
-_U = λ "x" ("x" • "x")
+c :: Expr
+c = λ "x" (λ "y" (λ "z" ("x" ∘ "z" ∘ "y")))
 
-_ω :: Expr
-_ω = λ "x" ("x" • "x")
+w :: Expr
+w = λ "x" (λ "y" ("x" ∘ "y" ∘ "y"))
 
-_Ω :: Expr
-_Ω = _ω • _ω
+ω :: Expr
+ω = λ "x" ("x" ∘ "x")
 
-_Y :: Expr
-_Y = λ "g" (λ "x" ("g" • ("x" • "x")) • λ "x" ("g" • ("x" • "x")))
+-- Ω :: Expr
+-- Ω = ω ∘ ω
+
+y :: Expr
+y = λ "g" (λ "x" ("g" ∘ ("x" ∘ "x")) ∘ λ "x" ("g" ∘ ("x" ∘ "x")))
