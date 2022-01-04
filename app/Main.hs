@@ -14,7 +14,7 @@ main = ps1 >> getLine >>= parseLine >>= exec >> main
   exec x = do
     case x of
       PPrint e -> print e
-      Tree e -> putStrLn (tree e)
+      Tree e -> putStrLn (vtree e)
       Repr e -> putStrLn (repr e)
       Eval e -> evalPrint e
     pure x

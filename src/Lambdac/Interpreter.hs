@@ -21,6 +21,33 @@ import Data.List ((\\), nub, singleton)
 -- otherwise check 
 -- if alpha equivalent then Nothing
 
+data IExpr
+  = IVar Int
+  | IAbs Int IExpr
+  | IApp IExpr IExpr
+  deriving Eq
+
+{-
+type IMap = Map String Int
+
+eval :: Expr -> Expr
+eval = result . until final step . start
+eval = start >>> first small >>> result
+
+start :: Expr -> (IExpr, IMap)
+start = ..
+
+small :: IExpr -> IExpr
+small = until final step
+
+result :: (IExpr, IMap) -> Expr
+result = ..
+
+step
+
+final
+-}
+
 eval :: Expr -> Expr
 eval e = do
   case alpha e of
