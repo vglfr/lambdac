@@ -1,17 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE TupleSections #-}
 
 module Lambdac.Printer where
 
-import Control.Arrow
+import Data.Foldable (foldl')
+import Data.Maybe (fromJust)
 import Lambdac.Syntax
 
 {-
- | screen does not fit = ├ (vtree)
- | deltas more than 15 = ┴ (htree)
- | deltas more than 1  = ⡈ (braille)
- | otherwise           = / (spj)
 
 -- tree  :: Tree -> String
 
@@ -27,13 +25,13 @@ import Lambdac.Syntax
 -- treeP :: Int -> Tree -> Path -> String
 
                        @
-              ⡀ ⠄ ⠂ ⠁     ⠈ ⠐ ⠠ ⢀                -- 11
+              ⡀ ⠄ ⠂ ⠁     ⠈ ⠐ ⠠ ⢀                -- 12
            @                       @
-       ⡀ ⠁   ⠈ ⢀               ⡀ ⠁   ⠈ ⢀         -- 5
+       ⡀ ⠁   ⠈ ⢀               ⡀ ⠁   ⠈ ⢀         -- 6
      @           @           @           @
-   ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀     -- 2
+   ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀       ⡀⠁ ⠈⢀     -- 3
   @     @     @     @     @     @     @     @
- / \   / \   / \   / \   / \   / \   / \   / \   -- 1
+ / \   / \   / \   / \   / \   / \   / \   / \   -- 2
 x   x y   y z   z u   u v   v w   w i   i j   j
 
   x    x     x      x
@@ -76,49 +74,100 @@ instance Repr Expr where
   repr (App f x) = "(App " ++ repr f ++ " " ++ repr x ++ ")"
 
 data PTree a
-  = PNode a (Tree a) (Tree a)
+  = PNode a (PTree a) (PTree a)
   | PLeaf a
-  deriving Show
+  deriving (Show, Foldable)
 
-data Elem = Elem String Int
-  deriving Functor
+row :: Int -> PTree a -> [a]
+row n t = go n [t]
+ where
+  go 0 ts = map root ts
+  go n ts = go (n-1) (concatMap leaves ts)
 
--- data Fill = SPJ | Braille | HTree
+root :: PTree a -> a
+root (PNode v _ _) = v
+root (PLeaf v)     = v
+
+leaves :: PTree a -> [PTree a]
+leaves (PNode _ l r) = [l, r]
+leaves n             = [n]
+
+left :: PTree a -> a
+left (PNode _ l _) = root l
+left (PLeaf _)     = error "leaf has no left branch"
+
+-- right :: PTree a -> a
+-- right (PNode _ _ r) = root r
+-- right (PLeaf _)     = error "leaf has no right branch"
+
+data Elem = Elem { tag :: String, off :: Int, width :: Int }
+
+data Style = SPJ | Braille | HTree deriving Eq
+
+fill :: Style -> Int -> String
+fill f n
+  | n == 0       = "  "
+  | f == SPJ     = "/ \\"
+  | f == Braille = fromJust $ lookup n [(2, "⡈ ⢁"), (3, "⡀⠁ ⠈⢀")] 
+  | f == HTree   = let hh = replicate (n - 2) '─' 
+                    in "┌" ++ hh ++ "┴" ++ hh ++ "┐"
 
 class Tree a where
   tree :: a -> String
 
 instance Tree Expr where
-  tree = splice . spine
-  -- tree = spine >>> pick >>> join &&& fill >>> splice
+  tree = plot . build . ptree
    where
-    spine :: Expr -> PTree Elem
-    spine e = undefined
-    -- spine e = go [Elem e 0]
-     -- where
-      -- go :: [Elem Expr] -> [[Elem String]]
-      -- go [] = []
-      -- go es = (fmap . fmap) root es : go (normalize . concatMap down $ es)
+    ptree :: Expr -> PTree Elem
+    ptree e = case e of
+      Var v   -> PLeaf (Elem  v  0 0)
+      Abs h b -> PNode (Elem "λ" 0 0) (ptree h) (ptree b)
+      App f x -> PNode (Elem "@" 0 0) (ptree f) (ptree x)
 
-      -- down :: Elem Expr -> [Elem Expr]
-      -- down (Elem (Var _) _) = []
-      -- down (Elem e n) = [Elem (treel e) (n-2), Elem (treer e) (n+2)]
+    build :: PTree Elem -> PTree Elem
+    build = go 0
+     where
+      go n t = if null $ row n t
+                  then t
+                  else let t' = modify n t
+                        in if overlap n t'
+                              then back n t'
+                              else go (n+1) t'
 
-      -- normalize :: [Elem Expr] -> [Elem Expr]
-      -- normalize [] = []
-      -- normalize e:es = undefined
+      modify n t = let es = row n t
+                    in undefined
 
-    pick :: PTree Elem -> (PTree Elem, Fill)
-    pick es = (es, SPJ)
+               -- case t of
+                 -- PLeaf e     -> PLeaf $ e { off = n }
+                 -- PNode e l r -> undefined
 
-    join :: ([[Elem String]], Fill) -> [String]
-    join _ = [""]
+      overlap n t = let os = off <$> row n t
+                     in any (<2) $ zipWith (-) (tail os) os
 
-    fill :: ([[Elem String]], Fill) -> [String]
-    fill _ = [""]
+      back 0 t = go 0 t
+      back n t = let t' = undefined
+                  in back (n-1) t'
 
-    splice :: ([String], [String]) -> String
-    splice = unlines . fmap (uncurry (++)) . uncurry zip
+    plot :: PTree Elem -> String
+    plot t = let s = style t
+                 o = offset t
+              in unlines $ go s o 0
+     where
+      style t = let d = diff t
+                 in if | d > 15 -> HTree
+                       | d > 1  -> Braille
+                       | otherwise -> SPJ
+
+      diff t = off (root t) - off (left t)
+      offset = negate . foldr (\x acc -> min acc (off x)) 0
+
+      go s o n = let es = row n t
+                  in if null es
+                        then []                   -- "\ESC[30m" ++ ++ "\ESC[m"
+                        else foldl' (draw o) "" es : foldl' (draw' s o) "" es : go s o (n+1)
+
+      draw    o acc e = acc ++ replicate (o - off e - length acc - 1) ' ' ++ tag e
+      draw' s o acc e = acc ++ replicate (o - off e - length acc - width e - 1) ' ' ++ fill s (width e)
 
 
 data Glyph = VR Int | VV Int | UR Int deriving Show
@@ -181,18 +230,10 @@ vtree e = go [] [(e,0)] []
   leaves (Abs h b) = [h, b]
   leaves (App f x) = [f, x]
 
-root :: Expr -> String
-root (Var x)   = x
-root (Abs _ _) = "λ"
-root (App _ _) = "@"
-
-treel :: Expr -> Expr
-treel (Abs l _) = l
-treel (App l _) = l
-
-treer :: Expr -> Expr
-treer (Abs _ r) = r
-treer (App _ r) = r
+  root :: Expr -> String
+  root (Var x)   = x
+  root (Abs _ _) = "λ"
+  root (App _ _) = "@"
 
 offset :: Glyph -> Int
 offset (VR n) = n

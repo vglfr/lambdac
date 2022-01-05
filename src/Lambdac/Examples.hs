@@ -78,8 +78,8 @@ x   x
 a2 :: Expr
 a2 = "x" ∘ "x" ∘ "x"
 
-a2' :: Expr
-a2' = "x" ∙ "x" ∘ "x"
+a2' :: TExpr
+a2' = "x" • "x" • "x"
 
 {- λx.x x -> x
 
@@ -91,6 +91,9 @@ x   x
 -}
 a3 :: Expr
 a3 = λ "x" "x" ∘ "x"
+
+a3' :: TExpr
+a3' = λ' "x" "x" • "x"
 
 -- x λx.x
 -- λx.x λx.x
