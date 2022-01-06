@@ -1,5 +1,3 @@
-module Main where
-
 import Lambdac.Interpreter
 import Lambdac.Parser
 import Lambdac.Printer
