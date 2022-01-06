@@ -5,6 +5,22 @@ module Lambdac.Examples where
 import Lambdac.Syntax
 import Lambdac.Typechecker
 
+{- λx.xxx -> λx.xxx
+
+  λ
+ / \
+x   @
+   / \
+  @   x
+ / \
+x   x
+-}
+f1 :: Expr
+f1 = λ "x" ("x" ∘ "x" ∘ "x")
+
+f1' :: TExpr
+f1' = λ' "x" ("x" • "x" • "x")
+
 {- λxyz.x -> λxyz.x
 
   λ
@@ -15,11 +31,11 @@ x   λ
      / \
     z   x
 -}
-f1 :: Expr
-f1 = λ "x" (λ "y" (λ "z" "x"))
+f2 :: Expr
+f2 = λ "x" (λ "y" (λ "z" "x"))
 
-f1' :: TExpr
-f1' = λ' "1" (λ' "2" (λ' "3" "1"))
+f2' :: TExpr
+f2' = λ' "1" (λ' "2" (λ' "3" "1"))
 
 {- λxyz.xyz -> λxyz.xyz
 
@@ -35,22 +51,20 @@ x   λ
      / \
     x   y
 -}
-f2 :: Expr
-f2 = λ "x" (λ "y" (λ "z" ("x" ∘ "y" ∘ "z")))
+f3 :: Expr
+f3 = λ "x" (λ "y" (λ "z" ("x" ∘ "y" ∘ "z")))
 
-f2' :: TExpr
-f2' = λ' "1" (λ' "2" (λ' "3" ("1" • "2" • "3")))
+f3' :: TExpr
+f3' = λ' "1" (λ' "2" (λ' "3" ("1" • "2" • "3")))
 
--- λx.(λy.xy)
--- λx.xxx
 -- λxy.xy
 -- λxy.xz
 -- λxy.zx
 -- λxy.xxy
--- λxy.xy(zxy)
+-- λxy.(xy)zxy
 -- λxyz.zx
--- λxyz.xy(zx)
--- λxyz.xy(zxy)
+-- λxyz.(xy)zx
+-- λxyz.(xy)zxy
 -- λxyz.(λu.v)yz
 -- λxyz.x(λu.v)z
 -- λxyz.xy(λu.v)
@@ -165,26 +179,20 @@ a5' = λ' "1" ("1" • "1" • "1") • "0"
 -- (λx.λy.xyy)(λy.y)y
 -- (λa.aa)(λb.ba)c
 -- (λxyz.xz(yz))(λx.z)(λx.a)
+-- λx.xxx z
 
 -- Old
 
--- (λx.x)(λy.y)
--- (λx.x)(λy.y)z
+-- λx.x λy.y
+-- λx.x λy.y z
 -- ((λx.x)(λy.y))z
--- λxy.xy
 -- λx.(λy.xy)
 -- (λxy.xxy)(λx.xy)(λx.xz)
 -- (λxyz.xz(yz))(λnn.n)(λp.p)
 -- (λy.λz(λn.λn.n)z(yz))(λp.p)
 -- λz(λn.z)((λp.p)z)
--- λxy.xz
--- λxy.xxy
--- λxyz.zx
--- (λx.xxx)z
 -- (λabc.cba)zz(λwv.w)
 -- (λz.zz)(λy.yy)
--- λx.xxx
--- λxy.zx
 -- λxyz.xy(zx)
 -- λxyz.xy(zxy)
 -- λxy.xy(zxy)
@@ -192,5 +200,5 @@ a5' = λ' "1" ("1" • "1" • "1") • "0"
 -- (λy.y)(λx.xx)(λz.zq)
 -- (λz.z)(λz.zz)(λz.zy)
 -- (λx.λy.xyy)(λy.y)y
--- (λa.aa)(λb.ba)c
+-- λa.aa λb.ba c
 -- (λxyz.xz(yz))(λx.z)(λx.a)

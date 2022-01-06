@@ -67,7 +67,7 @@ testParseAbs = describe "Lambdac.Parser - Abs" $ do
   it "parseAbs - no lambda" $ do
     parseAbs' "x.x" `shouldSatisfy` isLeft
 
-  xit "parseAbs - no dot" $ do
+  it "parseAbs - no dot" $ do
     parseAbs' "λxx" `shouldSatisfy` isLeft
 
 testParseApp :: Spec

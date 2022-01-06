@@ -6,14 +6,14 @@ maintainer:    vf.velt@gmail.com
 
 common common
   build-depends:    
-    base          == 4.15.*,
-    bytestring    == 0.10.*,
-    llvm-hs       == 12.0.*,
-    llvm-hs-pure  == 12.0.*,
-    mtl           == 2.2.*,
-    parsec        == 3.1.*,
-    process       == 1.6.*,
-    -- terminal-size == 0.3.*
+      base          == 4.15.*
+    , bytestring    == 0.10.*
+    , llvm-hs       == 12.0.*
+    , llvm-hs-pure  == 12.0.*
+    , mtl           == 2.2.*
+    , parsec        == 3.1.*
+    , process       == 1.6.*
+    -- , terminal-size == 0.3.*
   default-language:
     Haskell2010
 
@@ -47,14 +47,18 @@ test-suite lambdac-test
   import:
     common
   build-depends:
-    lambdac,
-    hspec == 2.8.*
+      lambdac
+    , hspec      == 2.8.*
+    , QuickCheck == 2.14.*
   hs-source-dirs:
     test
   main-is:
     Spec.hs
   other-modules:
-    -- Spec.Codegen
     Paths_lambdac
+    Spec.Interpreter
+    Spec.Parser
+    Spec.Printer
+    Spec.Quickcheck
   type:
     exitcode-stdio-1.0
