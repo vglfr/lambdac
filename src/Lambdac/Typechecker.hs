@@ -19,19 +19,40 @@ instance IsString TExpr where
 (•) :: TExpr -> TExpr -> TExpr
 (•) = TApp
 
+get :: String -> TExpr -> TExpr
+get ps t = go (init ps) t
+ where
+   go "" t = t
+   go ps t = let left = last ps == 'L'
+                 ps'  = init ps
+              in case t of
+                   TVar _   -> t
+                   TAbs h b -> if left then go ps' h else go ps' b
+                   TApp f x -> if left then go ps' f else go ps' x
+
+set :: TExpr -> String -> TExpr -> TExpr
+set v ps t = go (init ps) t
+ where
+   go "" t = v
+   go ps t = let left = last ps == 'L'
+                 ps'  = init ps
+              in case t of
+                   TVar _   -> v
+                   TAbs h b -> if left then (TAbs (go ps' h) b) else (TAbs h (go ps' b))
+                   TApp f x -> if left then (TApp (go ps' f) x) else (TApp f (go ps' x))
+
 -- reuse pprinter
 
 ttree :: Expr -> TExpr
--- ttree = reverse . dedup . debrujin
-ttree = dedup . debrujin
+ttree = reverse . dedup . debrujin
  where
   debrujin :: Expr -> TExpr
   debrujin = go []
    where
     go s e = case e of
-      App f x -> let s' = e:s in TApp (go s' f) (go s' x)
-      Abs h b -> let s' = e:s in TAbs (TVar 0)  (go s' b)
-      Var _   -> TVar $ lookup s 1 e
+               App f x -> let s' = e:s in TApp (go s' f) (go s' x)
+               Abs h b -> let s' = e:s in TAbs (TVar 0)  (go s' b)
+               Var _   -> TVar $ lookup s 1 e
 
     lookup []     _ _ = 0
     lookup (e:es) n v = case e of
@@ -40,68 +61,50 @@ ttree = dedup . debrujin
                           Abs h _ -> if h == v then n else lookup es (n+1) v
 
   dedup :: TExpr -> TExpr
-  dedup t = down (-1) [] t
+  dedup t = down (-1) "T" t
    where
-    down :: Int -> [TExpr] -> TExpr -> TExpr
-    down n us t = case t of
-      TVar _   -> up n us t t
-      TAbs _ b -> let b' = rename 1 n b
-                   in down (n-1) (TAbs (TVar n) b' : us) b'
-      TApp f _ -> down n (t:us) f
+    down n ps t = case get ps t of
+                    TVar _   -> up n (tail ps) (head ps) t
+                    TAbs h b -> let b' = rename 1 n b
+                                    t' = set (TAbs (TVar n) b') ps t
+                                 in down (n-1) ('R' : ps) t'
+                    TApp _ _ -> down n ('L' : ps) t
 
-    up _ []     t _ = t
-    up n (u:us) t d = case t of
-      -- TVar _   -> u
-      TVar _   -> up n us u t
-      -- TAbs _ _ -> up n us u t -- (sub t u)
-      -- TAbs _ _ -> u
-      -- TAbs _ _ -> sub t u
-      TAbs _ _ -> up n us (sub t u) t
-      TApp f x -> if left d t
-                     then down n (u:us) x
-                     -- else up n us (sub t u) t
-                     else up n us u t -- (sub t u)
+    up _ _  'T' t = t
+    up n ps  p  t = case get ps t of
+                      TVar _   -> up n (tail ps) (head ps) t
+                      TAbs _ _ -> up n (tail ps) (head ps) t
+                      TApp f x -> if p == 'L'
+                                     then down n ('R' : ps) t
+                                     else up n (tail ps) (head ps) t
 
-    left t u = case u of
-      TVar _   -> False
-      TAbs h _ -> h == t
-      TApp f _ -> f == t
-
-    rename :: Int -> Int -> TExpr -> TExpr
     rename i n t = case t of
-      TVar v   -> if v == i then TVar n else TVar v
-      TAbs h b -> TAbs h (rename (i+1) n b)
-      TApp f x -> TApp (rename i n f) (rename i n x)
-
-    sub :: TExpr -> TExpr -> TExpr
-    sub t u = let l = left t u
-               in case u of
-                    TVar _   -> error "absurd"
-                    TAbs h b -> if l then TAbs t b else TAbs h t
-                    TApp f x -> if l then TApp t x else TApp f t
+                     TVar v   -> if v == i then TVar n else TVar v
+                     TAbs h b -> TAbs h (rename (i+1) n b)
+                     TApp f x -> TApp (rename i n f) (rename i n x)
 
   reverse :: TExpr -> TExpr
   reverse t = case t of
-    TVar v   -> TVar (negate v)
-    TAbs h b -> TAbs (reverse h) (reverse b)
-    TApp f x -> TApp (reverse f) (reverse x)
+                TVar v   -> TVar (negate v)
+                TAbs h b -> TAbs (reverse h) (reverse b)
+                TApp f x -> TApp (reverse f) (reverse x)
 
 tcheck :: TExpr -> TExpr
 tcheck t = let t' = step t
-               in if t == t'
-                     then t
-                     else tcheck t'
+            in if t == t'
+                  then t
+                  else tcheck t'
 
 step :: TExpr -> TExpr
 step t = case t of
-  TVar n   -> TVar n
-  TAbs h b -> TAbs h (step b)
-  TApp f v -> case f of
-                TVar n   -> TApp f (step v)
-                TAbs h b -> sub h v b
-                TApp _ _ -> TApp (step f) v
+           TVar n   -> TVar n
+           TAbs h b -> TAbs h (step b)
+           TApp f v -> case f of
+                         TVar n   -> TApp f (step v)
+                         TAbs h b -> sub h v b
+                         TApp _ _ -> TApp (step f) v
  where
   sub h v b = case b of
-    TVar _   -> if b == h then v else b
-    TAbs h b -> TAbs h (sub h v b)
-    TApp g x -> TApp (sub h v g) (sub h v x)
+                TVar _   -> if b == h then v else b
+                TAbs h b -> TAbs h (sub h v b)
+                TApp g x -> TApp (sub h v g) (sub h v x)
