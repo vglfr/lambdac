@@ -1,17 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE DeriveFoldable #-}
-{-# LANGUAGE TupleSections #-}
 
 module Lambdac.Printer where
 
 import Data.Foldable (foldl')
 import Data.Maybe (fromJust)
+import Lambdac.Print.Show
 import Lambdac.Syntax
 
 {-
-
--- tree  :: Tree -> String
 
            depth
              ↓
@@ -43,35 +41,6 @@ x   x    x     x
 x   x    x       x          x
 
 -}
-
-{-
-
-            λxy.xz y u
--> α [y'/y] λxy'.xz y u
--> β [y /x] λy'.yz u
--> β [y'/u] yz
-            yz
-
--}
-
-instance Show Expr where
-  show (Var x)   = x
-  show (Abs h b) = "λ" ++ show h ++ showAbs b
-   where
-    showAbs (Abs h' b') = show h' ++ showAbs b'
-    showAbs e           = "." ++ showInner e
-    showInner e@(Abs _ _) = "(" ++ show e ++ ")"
-    showInner (App f x)   = showInner f ++ showInner x
-    showInner e           = show e
-  show (App f x) = show f ++ " " ++ show x
-
-class Repr a where
-  repr :: a -> String
-
-instance Repr Expr where
-  repr (Var x)   = "(Var \"" ++ x ++ "\")"
-  repr (Abs h b) = "(Abs " ++ repr h ++ " " ++ repr b ++ ")"
-  repr (App f x) = "(App " ++ repr f ++ " " ++ repr x ++ ")"
 
 data PTree a
   = PNode a (PTree a) (PTree a)
@@ -116,16 +85,16 @@ class Tree a where
   tree :: a -> String
 
 instance Tree Expr where
-  tree = plot . build . ptree
+  tree = plot . balance . build
    where
-    ptree :: Expr -> PTree Elem
-    ptree e = case e of
+    build :: Expr -> PTree Elem
+    build e = case e of
       Var v   -> PLeaf (Elem  v  0 0)
-      Abs h b -> PNode (Elem "λ" 0 0) (ptree h) (ptree b)
-      App f x -> PNode (Elem "@" 0 0) (ptree f) (ptree x)
+      Abs h b -> PNode (Elem "λ" 0 0) (build h) (build b)
+      App f x -> PNode (Elem "@" 0 0) (build f) (build x)
 
-    build :: PTree Elem -> PTree Elem
-    build = go 0
+    balance :: PTree Elem -> PTree Elem
+    balance = go 0
      where
       go n t = if null $ row n t
                   then t
@@ -168,84 +137,3 @@ instance Tree Expr where
 
       draw    o acc e = acc ++ replicate (o - off e - length acc - 1) ' ' ++ tag e
       draw' s o acc e = acc ++ replicate (o - off e - length acc - width e - 1) ' ' ++ fill s (width e)
-
-
-data Glyph = VR Int | VV Int | UR Int deriving Show
-type Glyphs = [Glyph]
-
-type Frame = (Expr, Int)
-type Stack = [Frame]
-
-vtree :: Expr -> String
-vtree e = go [] [(e,0)] []
- where
-  go :: [String] -> Stack -> Glyphs -> String
-  go ls [] _  = unlines . reverse $ ls
-  go ls fs gs = let (l,fs',gs') = line fs gs
-                 in go (l : ls) fs' gs'
-
-  line :: Stack -> Glyphs -> (String, Stack, Glyphs)
-  line (a:as) gs = let (s,as',gs') = draw a gs
-                    in (s, as' ++ as, gs')
-
-  draw :: Frame -> Glyphs -> (String, [Frame], Glyphs)
-  draw (e,o) gs = if simp e
-                     then (glyphs gs o ++ leaf e, [], next gs True)
-                     else (glyphs gs o ++ root e, map (, o+2) (leaves e), next gs False ++ [VR o])
-
-  next :: Glyphs -> Bool -> Glyphs
-  next [] _ = []
-  next gs isSimp
-    | isSimp &&      isVR (last gs)  = init gs ++ [UR $ offset $ last gs]
-    | isSimp && not (isVR (last gs)) = if null (init gs)
-                                          then []
-                                          else (init . init) gs ++ [UR $ offset . last . init $ gs]
-    | not isSimp &&      isVR (last gs)  = init gs ++ [VV $ offset $ last gs]
-    | not isSimp && not (isVR (last gs)) = init gs
-
-  glyphs :: Glyphs -> Int -> String
-  glyphs [] o = replicate o ' '
-  glyphs gs o =
-    let start = "\ESC[30m"
-        end   = "\ESC[m"
-        padding = replicate (o - offset (last gs) - 2) ' '
-     in start ++ concat (zipWith draw' gs (VR (-2) : gs)) ++ padding ++ end
-
-  draw' :: Glyph -> Glyph -> String
-  draw' e s = replicate (offset e - offset s - 2) ' ' ++ glyph e
-
-  simp :: Expr -> Bool
-  simp (Var _) = True
-  simp (Abs (Var _) (Var _)) = True
-  simp (App (Var _) (Var _)) = True
-  simp _ = False
-
-  leaf :: Expr -> String
-  leaf (Var x) = x
-  leaf (Abs h b) = unwords ["λ", show h, show b]
-  leaf (App f x) = unwords [show f, "@", show x]
-
-  leaves :: Expr -> [Expr]
-  leaves (Var x)   = []
-  leaves (Abs h b) = [h, b]
-  leaves (App f x) = [f, x]
-
-  root :: Expr -> String
-  root (Var x)   = x
-  root (Abs _ _) = "λ"
-  root (App _ _) = "@"
-
-offset :: Glyph -> Int
-offset (VR n) = n
-offset (VV n) = n
-offset (UR n) = n
-
-glyph :: Glyph -> String
-glyph (VR _) = "├ "
-glyph (VV _) = "│ "
-glyph (UR _) = "└ "
-
-isVR :: Glyph -> Bool
-isVR (VR _) = True
-isVR _      = False
-

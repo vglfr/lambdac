@@ -27,6 +27,10 @@ library
     Lambdac.Examples
     Lambdac.Interpreter
     Lambdac.Parser
+    Lambdac.Print.HTree
+    Lambdac.Print.Repr
+    Lambdac.Print.Show
+    Lambdac.Print.VTree
     Lambdac.Printer
     Lambdac.Syntax
     Lambdac.Typechecker

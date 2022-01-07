@@ -1,6 +1,7 @@
 module Lambdac.Interpreter where
 
-import Lambdac.Printer
+import Lambdac.Print.Show
+-- import Lambdac.Printer
 import Lambdac.Syntax
 
 import Data.List ((\\), nub, singleton)
@@ -20,6 +21,16 @@ import Data.List ((\\), nub, singleton)
 -- if successful then Just beta result
 -- otherwise check 
 -- if alpha equivalent then Nothing
+
+{-
+
+            λxy.xz y u
+-> α [y'/y] λxy'.xz y u
+-> β [y /x] λy'.yz u
+-> β [y'/u] yz
+            yz
+
+-}
 
 data IExpr
   = IVar Int

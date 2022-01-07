@@ -1,23 +1,7 @@
 module Lambdac.Typechecker where
 
-import Data.String (IsString (..))
-
 import Lambdac.Syntax
 
-data TExpr
-  = TVar Int
-  | TAbs TExpr TExpr
-  | TApp TExpr TExpr
-  deriving (Show, Eq)
-
-instance IsString TExpr where
-  fromString = TVar . read
-
-λ' :: TExpr -> TExpr -> TExpr
-λ' = TAbs
-
-(•) :: TExpr -> TExpr -> TExpr
-(•) = TApp
 
 get :: String -> TExpr -> TExpr
 get ps t = go (init ps) t
@@ -38,10 +22,8 @@ set v ps t = go (init ps) t
                  ps'  = init ps
               in case t of
                    TVar _   -> v
-                   TAbs h b -> if left then (TAbs (go ps' h) b) else (TAbs h (go ps' b))
-                   TApp f x -> if left then (TApp (go ps' f) x) else (TApp f (go ps' x))
-
--- reuse pprinter
+                   TAbs h b -> if left then TAbs (go ps' h) b else TAbs h (go ps' b)
+                   TApp f x -> if left then TApp (go ps' f) x else TApp f (go ps' x)
 
 ttree :: Expr -> TExpr
 ttree = reverse . dedup . debrujin

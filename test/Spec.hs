@@ -9,10 +9,10 @@ import Test.QuickCheck
 
 main :: IO ()
 main = do
-  -- hspec $ do
-  -- -- testCodegen
-    -- testInterpreter
-    -- testParser
-    -- testPrinter
+  hspec $ do
+  -- testCodegen
+    testInterpreter
+    testParser
+    testPrinter
 
-  verboseCheck temp2
+  -- verboseCheck temp2
