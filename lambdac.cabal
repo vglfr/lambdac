@@ -31,7 +31,6 @@ library
     Lambdac.Print.Repr
     Lambdac.Print.Show
     Lambdac.Print.VTree
-    Lambdac.Printer
     Lambdac.Syntax
     Lambdac.Typechecker
   hs-source-dirs:

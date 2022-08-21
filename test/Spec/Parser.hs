@@ -3,7 +3,7 @@
 module Spec.Parser where
 
 import Lambdac.Parser
-import Lambdac.Printer
+import Lambdac.Print.Show
 import Lambdac.Syntax
 
 import Data.ByteString as BS

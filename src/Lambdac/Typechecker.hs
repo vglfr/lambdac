@@ -26,7 +26,7 @@ set v ps t = go (init ps) t
                    TApp f x -> if left then TApp (go ps' f) x else TApp f (go ps' x)
 
 ttree :: Expr -> TExpr
-ttree = reverse . dedup . debrujin
+ttree = negate . dedup . debrujin
  where
   debrujin :: Expr -> TExpr
   debrujin = go []
@@ -64,12 +64,6 @@ ttree = reverse . dedup . debrujin
                      TVar v   -> if v == i then TVar n else TVar v
                      TAbs h b -> TAbs h (rename (i+1) n b)
                      TApp f x -> TApp (rename i n f) (rename i n x)
-
-  reverse :: TExpr -> TExpr
-  reverse t = case t of
-                TVar v   -> TVar (negate v)
-                TAbs h b -> TAbs (reverse h) (reverse b)
-                TApp f x -> TApp (reverse f) (reverse x)
 
 tcheck :: TExpr -> TExpr
 tcheck t = let t' = step t

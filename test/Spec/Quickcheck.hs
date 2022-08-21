@@ -3,7 +3,7 @@ module Spec.Quickcheck where
 import Control.Applicative
 
 import Lambdac.Parser
-import Lambdac.Printer
+import Lambdac.Print.Show
 import Lambdac.Syntax
 
 import Text.Parsec

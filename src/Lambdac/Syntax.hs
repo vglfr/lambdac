@@ -1,6 +1,8 @@
+{-# OPTIONS_GHC -Wno-missing-methods #-}
+
 module Lambdac.Syntax where
 
-import Data.String (IsString (..))
+import Data.String
 
 
 data Expr
@@ -31,5 +33,9 @@ data TExpr
 (•) :: TExpr -> TExpr -> TExpr
 (•) = TApp
 
-instance IsString TExpr where
-  fromString = TVar . read
+instance Num TExpr where
+  fromInteger = TVar . fromInteger
+  negate t = case t of
+               TVar v   -> TVar (negate v)
+               TAbs h b -> TAbs (negate h) (negate b)
+               TApp f x -> TApp (negate f) (negate x)

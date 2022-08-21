@@ -17,3 +17,5 @@ instance Show Expr where
 
 -- instance Show TExpr where
   -- show t = undefined
+
+  -- 1 -> 2 -> (0 @ 2)

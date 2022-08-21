@@ -2,7 +2,6 @@ import Lambdac.Interpreter
 import Lambdac.Parser
 import Lambdac.Print.VTree
 import Lambdac.Print.Repr
-import Lambdac.Printer
 import Lambdac.Syntax
 
 import System.IO (hFlush, stdout)
