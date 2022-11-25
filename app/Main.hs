@@ -1,8 +1,7 @@
-import Lambdac.Interpreter
-import Lambdac.Parser
-import Lambdac.Print.VTree
-import Lambdac.Print.Repr
-import Lambdac.Syntax
+import Lambdac.Interpreter (evalPrint)
+import Lambdac.Parser (Repl (..), parseLine)
+import Lambdac.Print.VTree (vtree)
+import Lambdac.Print.Repr (repr)
 
 import System.IO (hFlush, stdout)
 
@@ -16,4 +15,5 @@ main = ps1 >> getLine >>= parseLine >>= exec >> main
       Tree e -> putStrLn (vtree e)
       Repr e -> putStrLn (repr e)
       Eval e -> evalPrint e
+      NOP -> pure ()
     pure x

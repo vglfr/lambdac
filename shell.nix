@@ -1,8 +1,10 @@
-{ pkgs ? import <nixpkgs> {} }:
-with pkgs;
-  mkShell {
-    buildInputs = [
-      cabal-install
-      haskell.compiler.ghc924
-    ];
-  }
+{
+  pkgs ? import <nixpkgs> {}
+}:
+
+pkgs.mkShell {
+  buildInputs = [
+    pkgs.cabal-install
+    pkgs.haskell.compiler.ghc924
+  ];
+}

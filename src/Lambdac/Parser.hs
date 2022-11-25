@@ -5,18 +5,17 @@ import Lambdac.Syntax
 import Data.Either (fromRight)
 import Data.Foldable (foldl')
 import Data.Functor (($>))
--- import Debug.Trace
-import Text.Parsec
--- import Text.Parsec.Token (parens)
+import Text.Parsec (Parsec, char, chainl1, many, many1, oneOf, parse, skipMany1, space, string, try, (<|>))
 
 data Repl
   = PPrint Expr
   | Tree Expr
   | Repr Expr
   | Eval Expr
+  | NOP
 
 parseLine :: String -> IO Repl
-parseLine = pure . fromRight (Tree (Var "e")) . parse parseRepl ""
+parseLine = pure . fromRight NOP . parse parseRepl ""
 
 parseRepl :: Parsec String () Repl
 parseRepl = try parsePPrint <|> try parseTree <|> try parseRepr <|> parseEval

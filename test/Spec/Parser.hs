@@ -2,14 +2,14 @@
 
 module Spec.Parser where
 
-import Lambdac.Parser
+import Lambdac.Parser (parseAbs, parseApp, parseVar)
 import Lambdac.Print.Show
-import Lambdac.Syntax
+import Lambdac.Syntax (Expr (Var), λ, (∘))
 
 import Data.ByteString as BS
 import Data.Either (isLeft)
-import Test.Hspec
-import Text.Parsec
+import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
+import Text.Parsec (eof, parse)
 
 testParser :: Spec
 testParser = do

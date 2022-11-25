@@ -2,9 +2,10 @@
 
 module Spec.Printer where
 
-import Data.ByteString as BS
 import Lambdac.Print.Show
-import Lambdac.Syntax
+import Lambdac.Syntax (Expr (Var), λ, (∘))
+
+import Data.ByteString as BS
 import Test.Hspec
 
 testPrinter :: Spec

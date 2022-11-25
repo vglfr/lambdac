@@ -2,11 +2,11 @@
 
 module Spec.Interpreter where
 
-import Lambdac.Interpreter
-import Lambdac.Syntax
+import Lambdac.Interpreter (eval)
+import Lambdac.Syntax (λ, (∘))
 
 import Data.ByteString as BS
-import Test.Hspec
+import Test.Hspec (Spec, describe, it, shouldBe)
 
 testInterpreter :: Spec
 testInterpreter = describe "Lambdac.Interpreter" $ do
