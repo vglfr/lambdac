@@ -2,7 +2,7 @@
 
 module Lambdac.Combinators where
 
-import Lambdac.Syntax
+import Lambdac.Syntax ((∘), Expr, λ)
 
 {- λx.x -> λx.x
 

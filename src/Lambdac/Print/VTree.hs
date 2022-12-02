@@ -2,8 +2,8 @@
 
 module Lambdac.Print.VTree where
 
-import Lambdac.Print.Show
-import Lambdac.Syntax
+import Lambdac.Print.Show ()
+import Lambdac.Syntax (Expr (..))
 
 data Glyph = VR Int | VV Int | UR Int deriving Show
 type Glyphs = [Glyph]

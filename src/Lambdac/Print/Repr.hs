@@ -1,6 +1,6 @@
 module Lambdac.Print.Repr where
 
-import Lambdac.Syntax
+import Lambdac.Syntax (Expr (..))
 
 
 class Repr a where

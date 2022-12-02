@@ -9,7 +9,8 @@ import Text.Parsec (Parsec, char, chainl1, many, many1, oneOf, parse, skipMany1,
 
 data Repl
   = PPrint Expr
-  | Tree Expr
+  | VTree Expr
+  | HTree Expr
   | Repr Expr
   | Eval Expr
   | NOP
@@ -18,13 +19,16 @@ parseLine :: String -> IO Repl
 parseLine = pure . fromRight NOP . parse parseRepl ""
 
 parseRepl :: Parsec String () Repl
-parseRepl = try parsePPrint <|> try parseTree <|> try parseRepr <|> parseEval
+parseRepl = try parsePPrint <|> try parseVTree <|> try parseHTree <|> try parseRepr <|> parseEval
 
 parsePPrint :: Parsec String () Repl
 parsePPrint = string ":p " >> PPrint <$> parseExpr
 
-parseTree :: Parsec String () Repl
-parseTree = string ":t " >> Tree <$> parseExpr
+parseHTree :: Parsec String () Repl
+parseHTree = string ":h " >> HTree <$> parseExpr
+
+parseVTree :: Parsec String () Repl
+parseVTree = string ":v " >> VTree <$> parseExpr
 
 parseRepr :: Parsec String () Repl
 parseRepr = string ":r " >> Repr <$> parseExpr

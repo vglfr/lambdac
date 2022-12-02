@@ -1,5 +1,6 @@
 import Lambdac.Interpreter (evalPrint)
 import Lambdac.Parser (Repl (..), parseLine)
+import Lambdac.Print.HTree (Tree (tree))
 import Lambdac.Print.VTree (vtree)
 import Lambdac.Print.Repr (repr)
 
@@ -12,7 +13,8 @@ main = ps1 >> getLine >>= parseLine >>= exec >> main
   exec x = do
     case x of
       PPrint e -> print e
-      Tree e -> putStrLn (vtree e)
+      VTree e -> putStrLn (vtree e)
+      HTree e -> putStrLn (tree e)
       Repr e -> putStrLn (repr e)
       Eval e -> evalPrint e
       NOP -> pure ()

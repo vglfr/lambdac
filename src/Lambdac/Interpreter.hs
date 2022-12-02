@@ -1,8 +1,8 @@
 module Lambdac.Interpreter where
 
-import Lambdac.Print.Show
+import Lambdac.Print.Show ()
 -- import Lambdac.Printer
-import Lambdac.Syntax
+import Lambdac.Syntax (Expr (..))
 
 import Data.List ((\\), nub, singleton)
 

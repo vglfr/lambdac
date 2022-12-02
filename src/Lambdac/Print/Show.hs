@@ -1,6 +1,6 @@
 module Lambdac.Print.Show where
 
-import Lambdac.Syntax
+import Lambdac.Syntax (Expr (..))
 
 instance Show Expr where
   show (Var x)   = x

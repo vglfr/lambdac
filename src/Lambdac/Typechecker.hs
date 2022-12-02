@@ -1,6 +1,6 @@
 module Lambdac.Typechecker where
 
-import Lambdac.Syntax
+import Lambdac.Syntax (Expr (..), TExpr (..))
 
 
 get :: String -> TExpr -> TExpr
