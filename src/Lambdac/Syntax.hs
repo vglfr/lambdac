@@ -2,7 +2,7 @@
 
 module Lambdac.Syntax where
 
-import Data.String
+import Data.String (IsString, fromString)
 
 
 data Expr
@@ -19,6 +19,12 @@ data Expr
 
 instance IsString Expr where
   fromString = Var
+  
+symbol :: Expr -> String
+symbol e = case e of
+             Var v   -> v
+             Abs _ _ -> "λ"
+             App _ _ -> "@"
 
 
 data TExpr

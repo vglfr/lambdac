@@ -1,6 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveFoldable #-}
-{-# LANGUAGE DeriveFunctor #-}
 
 module Lambdac.Print.HTree where
 
@@ -8,8 +6,9 @@ import Data.Foldable (foldl')
 import Data.List (singleton)
 import Data.Maybe (fromJust)
 import Debug.Trace
+import Lambdac.Helper.DTree (DTree (..), row)
 import Lambdac.Print.Show ()
-import Lambdac.Syntax
+import Lambdac.Syntax (Expr (..), symbol)
 
 {-
 
@@ -44,67 +43,48 @@ x   x    x       x          x
 
 -}
 
-data PTree a
-  = PNode a (PTree a) (PTree a)
-  | PLeaf a
-  deriving (Show, Foldable, Functor)
+data PElem = PElem { string :: String, offset :: Int } deriving Show
 
-row :: Int -> PTree a -> [a]
-row n t = go n [t]
+data Style = Braille | Pipe | None | SPJ deriving (Show, Eq)
+
+tree' :: Expr -> DTree PElem
+tree' e = let v = PElem (symbol e) 0
+           in case e of
+                Var _   -> DSimp v
+                Abs h b -> fromRoot v h b
+                App f x -> fromRoot v f x
  where
-  go 0 ts = map root ts
-  go n ts = go (n-1) (concatMap leaves ts)
+  fromRoot :: PElem -> Expr -> Expr -> DTree PElem
+  fromRoot v l r = let p = DRoot v (go (-2) p l) (go 2 p r)
+                    in p
+  go :: Int -> DTree PElem -> Expr -> DTree PElem
+  go o p e = case e of
+               Var v   -> DLeaf p (PElem v o)
+               Abs h b -> fromNode "λ" o p h b
+               App f x -> fromNode "@" o p f x
+  fromNode :: String -> Int -> DTree PElem -> Expr -> Expr -> DTree PElem
+  fromNode c o p l r = let p' = DNode p (PElem c o) (go (o-2) p' l) (go (o+2) p' r)
+                        in p'
 
-depth :: PTree a -> Int
-depth = go 0
- where
-  go d t = case t of
-             PLeaf _     -> d
-             PNode _ l r -> max (go (d+1) l) (go (d+1) r)
+spread :: DTree PElem -> DTree PElem
+spread t = let _ = spreadRow $ row 3 t
+            in t
 
-root :: PTree a -> a
-root (PNode v _ _) = v
-root (PLeaf v)     = v
-
-leaves :: PTree a -> [PTree a]
-leaves (PNode _ l r) = [l, r]
-leaves (PLeaf _)     = []
-
-tree' :: Expr -> PTree Elem
-tree' =  go 0
- where
-  go o e = case e of
-             Var v   -> PLeaf (Elem  v  o 0)
-             Abs h b -> PNode (Elem "λ" o 2) (go (o-2) h) (go (o+2) b)
-             App f x -> PNode (Elem "@" o 2) (go (o-2) f) (go (o+2) x)
-
-spread :: [Elem] -> [Elem]
-spread = go []
+spreadRow :: [PElem] -> [PElem]
+spreadRow = go []
  where
   go as bs = if length bs < 2
                then as <> bs
                else let [a, b] = take 2 bs
                         d      = distance a b
                      in if d < 2
-                        then let (q, r) = divMod (2 - d) 2
+                        then let (q, r) = divMod (2-d) 2
                                  ls = shift (-q) $ as <> singleton a
-                                 rs = shift ( q + r) $ tail bs
+                                 rs = shift ( q+r) $ tail bs
                               in go ls rs
                         else go (as <> singleton a) (tail bs)
-  distance a b = off b - off a
-  shift n = map (\x -> x { off = off x + n })
-
--- left :: PTree a -> a
--- left (PNode _ l _) = root l
--- left (PLeaf _)     = error "leaf has no left branch"
-
--- right :: PTree a -> a
--- right (PNode _ _ r) = root r
--- right (PLeaf _)     = error "leaf has no right branch"
-
-data Elem = Elem { tag :: String, off :: Int, width :: Int } deriving Show
-
-data Style = Braille | Pipe | None | SPJ deriving (Show, Eq)
+  distance a b = offset b - offset a
+  shift n = map (\x -> x { offset = offset x + n })
 
 fill :: Style -> Int -> String
 fill s n
@@ -119,23 +99,24 @@ class Tree a where
   tree :: a -> String
 
 instance Tree Expr where
-  -- tree = plot . offset . balance . build
+  -- tree = plot . offsetLeft . balance . build
   -- tree = show . depth . build
-  tree = plot . offset . build
+  tree = plot . offsetLeft . build
    where
-    build :: Expr -> PTree Elem
+    build :: Expr -> DTree PElem
     build = go 0
      where
-      go o e = case e of
-                 Var v   -> PLeaf (Elem  v  o 0)
-                 Abs h b -> PNode (Elem "λ" o 2) (go (o-2) h) (go (o+2) b)
-                 App f x -> PNode (Elem "@" o 2) (go (o-2) f) (go (o+2) x)
+      go = undefined
+      -- go o e = case e of
+      --              Var v   -> PLeaf (PElem  v  o) Nothing
+      --              Abs h b -> PNode (PElem "λ" o) Nothing (go (o-2) h) (go (o+2) b)
+      --              App f x -> PNode (PElem "@" o) Nothing (go (o-2) f) (go (o+2) x)
 
-    offset :: PTree Elem -> PTree Elem
-    offset t = let d = negate $ minimum $ fmap off t
-                in fmap (\(Elem v o w) -> Elem v (o + d) w) t
+    offsetLeft :: DTree PElem -> DTree PElem
+    offsetLeft t = let d = negate $ minimum $ fmap offset t
+                    in fmap (\(PElem v o) -> PElem v (o + d)) t
 
-    plot :: PTree Elem -> String
+    plot :: DTree PElem -> String
     plot t = let s = style t
               in unlines $ go s 0
      where
@@ -148,10 +129,9 @@ instance Tree Expr where
       go s n = let es = row n t
                 in if null es
                       then []
-                      else foldl' draw "" es : go s (n+1)
-                      -- else foldl' draw "" es : grey (foldl' (draw' s) "" es) : go s (n+1)
+                      else foldl' draw "" es : grey (foldl' (draw' s) "" es) : go s (n+1)
 
-      draw    acc e = acc ++ replicate (off e - length acc) ' ' ++ tag e
-      -- draw' s acc e = acc ++ replicate (off e - length acc - width e) ' ' ++ fill s (width e)
+      draw    acc e = acc ++ replicate (offset e - length acc) ' ' ++ string e
+      draw' s acc e = acc ++ replicate (offset e - length acc) ' ' ++ fill s 0
 
       grey s = "\ESC[30m" ++ s ++ "\ESC[m"
