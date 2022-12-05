@@ -8,12 +8,9 @@ common common
   build-depends:    
       base          == 4.16.*
     , bytestring    == 0.11.*
-    -- , llvm-hs       == 12.0.*
-    -- , llvm-hs-pure  == 12.0.*
     , mtl           == 2.2.*
     , parsec        == 3.1.*
     , process       == 1.6.*
-    -- , terminal-size == 0.3.*
   default-language:
     Haskell2010
 
@@ -22,9 +19,9 @@ library
     common
   exposed-modules:
     Lambdac
-    -- Lambdac.Codegen
     Lambdac.Combinators
     Lambdac.Examples
+    Lambdac.Helper.DTree
     Lambdac.Interpreter
     Lambdac.Parser
     Lambdac.Print.HTree

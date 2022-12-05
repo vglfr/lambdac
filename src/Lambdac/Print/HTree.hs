@@ -48,22 +48,18 @@ data PElem = PElem { string :: String, offset :: Int } deriving Show
 data Style = Braille | Pipe | None | SPJ deriving (Show, Eq)
 
 tree' :: Expr -> DTree PElem
-tree' e = let v = PElem (symbol e) 0
-           in case e of
-                Var _   -> DSimp v
-                Abs h b -> fromRoot v h b
-                App f x -> fromRoot v f x
+tree' e = go 0 Nothing e
  where
-  fromRoot :: PElem -> Expr -> Expr -> DTree PElem
-  fromRoot v l r = let p = DRoot v (go (-2) p l) (go 2 p r)
-                    in p
-  go :: Int -> DTree PElem -> Expr -> DTree PElem
+  go :: Int -> Maybe (DTree PElem) -> Expr -> DTree PElem
   go o p e = case e of
-               Var v   -> DLeaf p (PElem v o)
+               Var v   -> DNode p (PElem v o) Nothing Nothing
                Abs h b -> fromNode "λ" o p h b
                App f x -> fromNode "@" o p f x
-  fromNode :: String -> Int -> DTree PElem -> Expr -> Expr -> DTree PElem
-  fromNode c o p l r = let p' = DNode p (PElem c o) (go (o-2) p' l) (go (o+2) p' r)
+  fromNode c o p l r = let p' = DNode
+                                  { top   = p
+                                  , value = PElem c o
+                                  , left  = Just $ go (o-2) (Just p') l
+                                  , right = Just $ go (o+2) (Just p') r }
                         in p'
 
 spread :: DTree PElem -> DTree PElem

@@ -1,14 +1,15 @@
 module Lambdac.Print.Show where
 
+import GHC.Show (showSpace)
 import Lambdac.Syntax (Expr (..))
 
 instance Show Expr where
-  show (Var x)   = x
-  show (Abs h b) = "λ" ++ show h ++ showAbs b
+  showsPrec _ (Var x)   = showString x
+  showsPrec _ (Abs h b) = showString "λ" . shows h . showAbs b
    where
-    showAbs (Abs h' b') = show h' ++ showAbs b'
-    showAbs e           = "." ++ showInner e
-    showInner e@(Abs _ _) = "(" ++ show e ++ ")"
-    showInner (App f x)   = showInner f ++ showInner x
-    showInner e           = show e
-  show (App f x) = show f ++ " " ++ show x
+    showAbs (Abs h' b') = shows h' . showAbs b'
+    showAbs e           = showString "." . showInner e
+    showInner e@(Abs _ _) = showParen True $ shows e
+    showInner (App f x)   = showInner f . showInner x
+    showInner e           = shows e
+  showsPrec _ (App f x) = shows f . showSpace . shows x

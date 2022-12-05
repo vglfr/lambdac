@@ -3,26 +3,33 @@
 
 module Lambdac.Helper.DTree where
 
-data DTree a
-  = DRoot {                 value :: a, left :: DTree a, right :: DTree a }
-  | DNode { top :: DTree a, value :: a, left :: DTree a, right :: DTree a }
-  | DLeaf { top :: DTree a, value :: a }
-  | DSimp {                 value :: a }
+import Data.Maybe (catMaybes)
+import GHC.Show (showSpace)
+
+data DTree a = DNode
+  { top   :: Maybe (DTree a)
+  , value :: a
+  , left  :: Maybe (DTree a)
+  , right :: Maybe (DTree a) }
   deriving (Foldable, Functor)
  
 instance Show a => Show (DTree a) where
-  show (DRoot   v l r) = "(DRoot ("                   ++ show v ++ ") " ++ show l ++ " " ++ show r ++ ")"
-  show (DNode _ v l r) = "(DNode ([parent:cyclic]) (" ++ show v ++ ") " ++ show l ++ " " ++ show r ++ ")"
-  show (DLeaf _ v)     = "(DLeaf ([parent:cyclic]) (" ++ show v ++ "))"
-  show (DSimp   v)     = "(DSimp ("                   ++ show v ++ "))"
+  showsPrec _ (DNode t v l r) = showParen True showAll
+   where
+    showAll   = showName . showSpace . showTop . showSpace . showValue . showSpace . showLeft . showSpace . showRight
+    showName  = showString "DNode"
+    showTop   = showString $ maybe "[none]" (const "[cyclic]") t
+    showValue = showParen True $ shows v
+    showLeft  = showString $ maybe "[none]" show l
+    showRight = showString $ maybe "[none]" show r
 
 depth :: DTree a -> Int
-depth = go 0
+depth = go 0 . Just
  where
-  go d t = case t of
-             DSimp _       -> 1
-             DLeaf _ _     -> d
-             DNode _ _ l r -> max (go (d+1) l) (go (d+1) r)
+  go d t = let d' = d+1
+            in case t of
+                 Nothing -> d'
+                 Just t' -> max (go d' (left t')) (go d' (right t'))
 
 row :: Int -> DTree a -> [a]
 row n t = go n [t]
@@ -31,10 +38,10 @@ row n t = go n [t]
   go n ts = go (n-1) (concatMap leaves ts)
 
 leaves :: DTree a -> [DTree a]
-leaves (DRoot   _ l r) = [l, r]
-leaves (DNode _ _ l r) = [l, r]
-leaves (DLeaf _ _)     = []
-leaves (DSimp _)       = []
+leaves t = catMaybes [left t, right t]
+
+root :: DTree a -> DTree a
+root t = maybe t root (top t)
 
 -- get bitmask from index
 -- traverse to the element in question
