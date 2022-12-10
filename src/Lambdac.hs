@@ -3,6 +3,7 @@ module Lambdac where
 -- import Lambdac.Codegen
 import Lambdac.Combinators
 import Lambdac.Examples
+import Lambdac.Helper.DTree
 import Lambdac.Interpreter
 import Lambdac.Print.HTree
 import Lambdac.Print.Repr
