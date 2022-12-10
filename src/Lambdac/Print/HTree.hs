@@ -3,10 +3,11 @@
 module Lambdac.Print.HTree where
 
 import Data.Foldable (foldl')
-import Data.List (singleton)
+import Data.List (elemIndex, singleton)
+import Data.List.Extra (trimEnd)
 import Data.Maybe (fromJust)
 import Debug.Trace
-import Lambdac.Helper.DTree (DTree (..), depth, parent, row)
+import Lambdac.Helper.DTree (DTree (..), depth, parent, root, row)
 import Lambdac.Print.Show ()
 import Lambdac.Syntax (Expr (..), symbol)
 
@@ -32,18 +33,47 @@ x   x    x       x          x
 
 -}
 
+edges = [ (2, " / \\")
+        , (3, " ⡀⠁ ⠈⢀")
+        , (4, " ⡀⋅⠁ ⠈⢀")
+        , (5, " ⡀⠁   ⠈⢀") ] 
+
 data PElem = PElem { string :: String, offset :: Int } deriving (Eq, Show)
 
-data Style = Braille | Pipe | None | SPJ deriving (Show, Eq)
+data Style = Pipe | SPJB deriving (Show, Eq)
 
-valueOffset :: DTree PElem -> Int
-valueOffset = offset . value
+htree :: Expr -> String
+htree = plot SPJB . shiftRight . spread . build
+ where
+  shiftRight :: DTree PElem -> DTree PElem
+  shiftRight t = let d = negate $ minimum $ fmap offset t
+                  in fmap (\(PElem v o) -> PElem v (o + d)) t
 
-valueString :: DTree PElem -> String
-valueString = string . value
+  plot :: Style -> DTree PElem -> String
+  plot s t = trimEnd . unlines $ go 0
+   where
+    go n = let es = row n t
+            in if null es
+                  then []
+                  else foldl' drawValue "" es : grey (foldl' drawSpine "" es) : go (n+1)
 
-tree' :: Expr -> DTree PElem
-tree' = go 0 Nothing
+    drawValue acc e = acc ++ replicate (valueOffset e - length acc) ' ' ++ valueString e
+    drawSpine acc e = case left e of
+                        Nothing -> acc
+                        Just e' -> let d = distance e e'
+                                    in acc ++ replicate (valueOffset e' - length acc) ' ' ++ fill s d
+
+    fill :: Style -> Int -> String
+    fill s n
+      | n == 0    = ""
+      | s == SPJB = fromJust $ lookup n edges
+      | s == Pipe = let hh = replicate (n - 1) '─' 
+                     in "┌" ++ hh ++ "┴" ++ hh ++ "┐"
+
+    grey s = "\ESC[30m" ++ s ++ "\ESC[m"
+  
+build :: Expr -> DTree PElem
+build = go 0 Nothing
  where
   go :: Int -> Maybe (DTree PElem) -> Expr -> DTree PElem
   go o p e = case e of
@@ -64,29 +94,26 @@ spread t = go (depth t) t
   go n t = go (n-1) (spreadRow n t)
 
 spreadRow :: Int -> DTree PElem -> DTree PElem
-spreadRow n t = case go n t of
-                   (True,  t') -> t'
-                   (False, t') -> go n t'
+spreadRow n t = case spreadOnce n t of
+                   (True,  _ ) -> t
+                   (False, t') -> spreadRow n t'
  where
-  go n t = let r = row n t
-            in undefined
+  spreadOnce :: Int -> DTree PElem -> (Bool, DTree PElem)
+  spreadOnce n t = case overlap $ row n t of
+                     Nothing     -> (True, t)
+                     Just (a, b) -> traceShowId $ (False, spreadParent a b)
 
-spreadRow' :: [DTree PElem] -> [DTree PElem]
-spreadRow' = go []
- where
-  go :: [DTree PElem] -> [DTree PElem] -> [DTree PElem]
-  go as bs = if length bs < 2
-               then as <> bs
-               else let [a, b] = take 2 bs
-                        d      = distance a b
-                     in if d < 2
-                        then let -- p = parent a b
-                                 (q, r) = divMod (2-d) 2
-                                 ls = map (shiftBelow (-q)) $ as <> singleton a
-                                 rs = map (shiftBelow ( q+r)) $ tail bs
-                              in go ls rs
-                        else go (as <> singleton a) (tail bs)
-  distance a b = valueOffset b - valueOffset a
+spreadParent :: DTree PElem -> DTree PElem -> DTree PElem
+spreadParent a b = let (q, r) = divMod (2 - distance a b) 2
+                       p  = parent a b
+                       l' = shiftBelow (-q)   <$> left p
+                       r' = shiftBelow ( q+r) <$> right p
+                    in root $ p { left = l', right = r' }
+
+overlap :: [DTree PElem] -> Maybe (DTree PElem, DTree PElem)
+overlap es = let os = zipWith (\a b -> distance b a < 2) es (tail es)
+                 o  = elemIndex True os
+              in (\i -> (es !! i, es !! (i+1))) <$> o
 
 shiftBelow :: Int -> DTree PElem -> DTree PElem
 shiftBelow n t = let v  = value t
@@ -95,57 +122,16 @@ shiftBelow n t = let v  = value t
                      r' = shiftBelow n <$> right t
                   in DNode (top t) v' l' r'
 
-fill :: Style -> Int -> String
-fill s n
-  | n == 0       = ""
-  | s == None    = ""
-  | s == SPJ     = " / \\"
-  | s == Braille = fromJust $ lookup n [(2, " ⡈ ⢁"), (3, "⡀⠁ ⠈⢀")] 
-  | s == Pipe    = let hh = replicate (n - 1) '─' 
-                    in "┌" ++ hh ++ "┴" ++ hh ++ "┐"
+valueOffset :: DTree PElem -> Int
+valueOffset = offset . value
 
-class Tree a where
-  tree :: a -> String
+valueString :: DTree PElem -> String
+valueString = string . value
 
-instance Tree Expr where
-  -- tree = plot . offsetLeft . balance . build
-  tree = plot . shiftRight . build
-   where
-    build :: Expr -> DTree PElem
-    build = go 0 Nothing
-     where
-      go :: Int -> Maybe (DTree PElem) -> Expr -> DTree PElem
-      go o p e = case e of
-                   Var v   -> DNode p (PElem v o) Nothing Nothing
-                   Abs h b -> fromNode "λ" o p h b
-                   App f x -> fromNode "@" o p f x
-      fromNode c o p l r = let p' = DNode
-                                      { top   = p
-                                      , value = PElem c o
-                                      , left  = Just $ go (o-2) (Just p') l
-                                      , right = Just $ go (o+2) (Just p') r }
-                            in p'
+distance :: DTree PElem -> DTree PElem -> Int
+distance a b = valueOffset a - valueOffset b
 
-    shiftRight :: DTree PElem -> DTree PElem
-    shiftRight t = let d = negate $ minimum $ fmap offset t
-                    in fmap (\(PElem v o) -> PElem v (o + d)) t
-
-    plot :: DTree PElem -> String
-    plot t = let s = style t
-              in unlines $ go s 0
-     where
-      style _ = None
-      -- style t = let d = off (root t) - off (left t)
-      --            in if | d > 12 -> Pipe
-      --                  | d > 2  -> Braille
-      --                  | otherwise -> SPJ
-
-      go s n = let es = row n t
-                in if null es
-                      then []
-                      else foldl' draw "" es : grey (foldl' (draw' s) "" es) : go s (n+1)
-
-      draw    acc e = acc ++ replicate (valueOffset e - length acc) ' ' ++ valueString e
-      draw' s acc e = acc ++ replicate (valueOffset e - length acc) ' ' ++ fill s 0
-
-      grey s = "\ESC[30m" ++ s ++ "\ESC[m"
+-- guessStyle t = let d = off (root t) - off (left t)
+--            in if | d > 12 -> Pipe
+--                  | d > 2  -> Braille
+--                  | otherwise -> SPJ

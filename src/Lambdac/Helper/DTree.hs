@@ -10,11 +10,14 @@ data DTree a = DNode
   , value :: a
   , left  :: Maybe (DTree a)
   , right :: Maybe (DTree a) }
-  deriving (Eq, Functor)
+  deriving Functor
 
 instance Foldable DTree where
   foldMap f (DNode _ v l r) = let foldLeaf = maybe mempty (foldMap f)
                                in f v <> foldLeaf l <> foldLeaf r
+
+instance Eq a => Eq (DTree a) where
+  (==) a b = value a == value b && left a == left b && right a == right b
  
 instance Show a => Show (DTree a) where
   showsPrec _ (DNode t v l r) = showParen True showAll
@@ -29,10 +32,10 @@ instance Show a => Show (DTree a) where
 depth :: DTree a -> Int
 depth = go 0 . Just
  where
-  go d t = let d' = d+1
-            in case t of
-                 Nothing -> d'
-                 Just t' -> max (go d' (left t')) (go d' (right t'))
+  go d t = case t of
+             Nothing -> d
+             Just t' -> let d' = d + 1
+                         in max (go d' $ left t') (go d' $ right t')
 
 row :: Int -> DTree a -> [DTree a]
 row n t = go n [t]
