@@ -2,6 +2,7 @@
 
 module Lambdac.Helper.DTree where
 
+import Control.Monad (join)
 import Data.Maybe (catMaybes, fromJust)
 import GHC.Show (showSpace)
 
@@ -11,10 +12,6 @@ data DTree a = DNode
   , left  :: Maybe (DTree a)
   , right :: Maybe (DTree a) }
   deriving Functor
-
-instance Foldable DTree where
-  foldMap f (DNode _ v l r) = let foldLeaf = maybe mempty (foldMap f)
-                               in f v <> foldLeaf l <> foldLeaf r
 
 instance Eq a => Eq (DTree a) where
   (==) a b = value a == value b && left a == left b && right a == right b
@@ -28,6 +25,10 @@ instance Show a => Show (DTree a) where
     showValue = showParen True $ shows v
     showLeft  = showString $ maybe "[none]" show l
     showRight = showString $ maybe "[none]" show r
+
+instance Foldable DTree where
+  foldMap f (DNode _ v l r) = let foldLeaf = maybe mempty (foldMap f)
+                               in f v <> foldLeaf l <> foldLeaf r
 
 depth :: DTree a -> Int
 depth = go 0 . Just
@@ -55,3 +56,10 @@ parent :: Eq a => DTree a -> DTree a -> DTree a
 parent a b = let pa = fromJust . top $ a
                  pb = fromJust . top $ b
               in if pa == pb then pa else parent pa pb
+
+relink :: Eq a => DTree a -> DTree a -> DTree a
+relink t t' = case top t of
+                Nothing -> t'
+                Just p  -> if left p == Just t
+                           then relink p $ p { left  = Just t' }
+                           else relink p $ p { right = Just t' }

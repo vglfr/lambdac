@@ -59,7 +59,7 @@ test-suite lambdac-test
     Paths_lambdac
     Spec.Interpreter
     Spec.Parser
-    Spec.Printer
+    Spec.Print.Show
     Spec.Quickcheck
   type:
     exitcode-stdio-1.0

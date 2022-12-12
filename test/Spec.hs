@@ -1,7 +1,7 @@
 -- import Spec.Codegen
 import Spec.Interpreter
 import Spec.Parser
-import Spec.Printer
+import Spec.Print.Show
 import Spec.Quickcheck
 
 import Test.Hspec

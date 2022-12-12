@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Spec.Printer where
+module Spec.Print.Show where
 
-import Lambdac.Print.Show
+import Lambdac.Examples (f1, f1p)
+import Lambdac.Print.Show ()
 import Lambdac.Syntax (Expr (Var), λ, (∘))
 
-import Data.ByteString as BS
-import Test.Hspec
+import Test.Hspec (Spec, describe, it, shouldBe)
 
 testPrinter :: Spec
 testPrinter = describe "Lambdac.Printer" $ do
@@ -48,6 +48,9 @@ testPrinter = describe "Lambdac.Printer" $ do
 
   it "show Abs - λxyz.x(λuv.vw)z" $ do
     show (λ "x" (λ "y" (λ "z" ("x" ∘ λ "u" (λ "v" ("v" ∘ "w")) ∘ "z")))) `shouldBe` "λxyz.x(λuv.vw)z"
+
+  it "show Abs - λx.xxx - f1" $ do
+    show f1 `shouldBe` f1p
 
   it "show App - two variables" $ do
     show ("x" ∘ "y") `shouldBe` "x y"
