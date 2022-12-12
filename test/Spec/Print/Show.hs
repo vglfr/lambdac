@@ -2,14 +2,14 @@
 
 module Spec.Print.Show where
 
-import Lambdac.Examples (f1, f1p)
+import Lambdac.Example.Abs (f1, f1p)
 import Lambdac.Print.Show ()
 import Lambdac.Syntax (Expr (Var), λ, (∘))
 
 import Test.Hspec (Spec, describe, it, shouldBe)
 
-testPrinter :: Spec
-testPrinter = describe "Lambdac.Printer" $ do
+testPrintShow :: Spec
+testPrintShow = describe "Lambdac.Print.Show" $ do
   it "show Var - base" $ do
     show (Var "x") `shouldBe` "x"
 

@@ -21,7 +21,9 @@ library
   exposed-modules:
     Lambdac
     Lambdac.Combinators
-    Lambdac.Examples
+    Lambdac.Example.Abs
+    Lambdac.Example.App
+    Lambdac.Example.Var
     Lambdac.Helper.DTree
     Lambdac.Interpreter
     Lambdac.Parser
@@ -59,7 +61,10 @@ test-suite lambdac-test
     Paths_lambdac
     Spec.Interpreter
     Spec.Parser
+    Spec.Print.HTree
+    Spec.Print.Repr
     Spec.Print.Show
+    Spec.Print.VTree
     Spec.Quickcheck
   type:
     exitcode-stdio-1.0

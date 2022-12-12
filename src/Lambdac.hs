@@ -2,7 +2,9 @@ module Lambdac where
 
 -- import Lambdac.Codegen
 import Lambdac.Combinators
-import Lambdac.Examples
+import Lambdac.Example.Abs
+import Lambdac.Example.App
+import Lambdac.Example.Var
 import Lambdac.Helper.DTree
 import Lambdac.Interpreter
 import Lambdac.Print.HTree

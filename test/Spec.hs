@@ -1,7 +1,10 @@
 -- import Spec.Codegen
 import Spec.Interpreter
 import Spec.Parser
-import Spec.Print.Show
+import Spec.Print.HTree (testPrintHTree)
+import Spec.Print.Repr (testPrintRepr)
+import Spec.Print.Show (testPrintShow)
+import Spec.Print.VTree (testPrintVTree)
 import Spec.Quickcheck
 
 import Test.Hspec
@@ -13,6 +16,9 @@ main = do
   -- testCodegen
     testInterpreter
     testParser
-    testPrinter
+    testPrintHTree
+    testPrintRepr
+    testPrintShow
+    testPrintVTree
 
   -- verboseCheck temp2
