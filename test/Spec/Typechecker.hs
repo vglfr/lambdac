@@ -12,7 +12,7 @@ testTypechecker = do
   testTCheck
 
 testTTree :: Spec
-testTTree = describe "Lambdac.TTree" $ do
+testTTree = describe "Lambdac.Typechecker - TTree" $ do
   it "ttree Var v1 (x)" $ do
     ttree v1 `shouldBe` v1'
 
@@ -23,7 +23,7 @@ testTTree = describe "Lambdac.TTree" $ do
     ttree v3 `shouldBe` v3'
 
 testTCheck :: Spec
-testTCheck = describe "Lambdac.TCheck" $ do
+testTCheck = describe "Lambdac.Typechecker - TCheck" $ do
   it "tcheck Var v1 (0 -> 0)" $ do
     tcheck v1' `shouldBe` v1t
 

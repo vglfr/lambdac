@@ -5,7 +5,7 @@ module Spec.Parser where
 import Lambdac.Example.Var (v1, v2, v3, v1p, v2p, v3p)
 import Lambdac.Parser (parseAbs, parseApp, parseVar)
 import Lambdac.Print.Show ()
-import Lambdac.Syntax (Expr (Var), λ, (∘))
+import Lambdac.Syntax (Expr, λ, (∘))
 
 import Data.ByteString as BS
 import Data.Either (isLeft)

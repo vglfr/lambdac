@@ -140,6 +140,40 @@ f4v = undefined
 f4h :: String
 f4h = undefined
 
+{- λx.(λy.y)x -> λx.x
+
+  λ
+ / \
+x   @
+   / \
+  λ   x
+ / \
+y   y
+-}
+f5 :: Expr
+f5 = λ "x" (λ "y" "y" ∘ "x")
+
+f5' :: TExpr
+f5' = λ' 0 0
+
+f5e :: Expr
+f5e = λ "x" "x"
+
+f5t :: TExpr
+f5t = undefined
+
+f5p :: String
+f5p = undefined
+
+f5r :: String
+f5r = undefined
+
+f5v :: String
+f5v = undefined
+
+f5h :: String
+f5h = undefined
+
 -- λxy.xy
 -- λxy.xz
 -- λxy.zx

@@ -1,6 +1,7 @@
 module Spec.Print.Repr where
 
 import Lambdac.Example.Abs (f1, f1r)
+import Lambdac.Example.App (a1, a1r)
 import Lambdac.Example.Var (v1, v2, v3, v1r, v2r, v3r)
 import Lambdac.Print.Repr (repr)
 
@@ -19,3 +20,6 @@ testPrintRepr = describe "Lambdac.Print.Repr" $ do
 
   it "repr Abs f1 (λx.xxx)" $ do
     repr f1 `shouldBe` f1r
+
+  it "repr App a1 (x x)" $ do
+    repr a1 `shouldBe` a1r
