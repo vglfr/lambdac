@@ -16,6 +16,12 @@ a1 = "x" ∘ "x"
 a1' :: TExpr
 a1' = 0 • 0
 
+a1e :: Expr
+a1e = undefined
+
+a1t :: TExpr
+a1t = undefined
+
 a1p :: String
 a1p = "x x"
 
@@ -42,17 +48,23 @@ a2 = "x" ∘ "x" ∘ "x"
 a2' :: TExpr
 a2' = 0 • 0 • 0
 
+a2e :: Expr
+a2e = undefined
+
+a2t :: TExpr
+a2t = undefined
+
 a2p :: String
 a2p = "x x x"
 
 a2r :: String
-a2r = ""
+a2r = undefined
 
 a2v :: String
-a2v = ""
+a2v = undefined
 
 a2h :: String
-a2h = ""
+a2h = undefined
 
 {- λx.x x -> x
 
@@ -67,6 +79,24 @@ a3 = λ "x" "x" ∘ "x"
 
 a3' :: TExpr
 a3' = λ' 1 1 • 0
+
+a3e :: Expr
+a3e = undefined
+
+a3t :: TExpr
+a3t = 0
+
+a3p :: String
+a3p = undefined
+
+a3r :: String
+a3r = undefined
+
+a3v :: String
+a3v = undefined
+
+a3h :: String
+a3h = undefined
 
 -- x λx.x
 -- λx.x λx.x
@@ -87,6 +117,24 @@ a4 = λ "x" ("x" ∘ "x") ∘ λ "y" ("y" ∘ "y")
 
 a4' :: TExpr
 a4' = λ' 1 (1 • 1) • λ' 2 (2 • 2)
+
+a4e :: Expr
+a4e = undefined
+
+a4t :: TExpr
+a4t = undefined
+
+a4p :: String
+a4p = undefined
+
+a4r :: String
+a4r = undefined
+
+a4v :: String
+a4v = undefined
+
+a4h :: String
+a4h = undefined
 
 -- λx.x λx.x λx.x
 
@@ -163,6 +211,24 @@ a5 = (λ "x" "x" ∘ λ "y" "y") ∘ (λ "z" "z" ∘ "u")
 a5' :: TExpr
 a5' = (λ' 1 1 • λ' 2 2) • (λ' 3 3 • 0)
 
+a5e :: Expr
+a5e = undefined
+
+a5t :: TExpr
+a5t = undefined
+
+a5p :: String
+a5p = undefined
+
+a5r :: String
+a5r = undefined
+
+a5v :: String
+a5v = undefined
+
+a5h :: String
+a5h = undefined
+
 -- (λx.x)(λy.y)z
 -- ((λx.x)(λy.y))z
 -- (λxy.xxy)(λx.xy)(λx.xz)
@@ -187,6 +253,24 @@ a6 = λ "x" ("x" ∘ "x" ∘ "x") ∘ "z"
 
 a6' :: TExpr
 a6' = λ' 1 (1 • 1 • 1) • 0
+
+a6e :: Expr
+a6e = undefined
+
+a6t :: TExpr
+a6t = undefined
+
+a6p :: String
+a6p = undefined
+
+a6r :: String
+a6r = undefined
+
+a6v :: String
+a6v = undefined
+
+a6h :: String
+a6h = undefined
 
 -- (λabc.cba)zz(λwv.w)
 -- (λx.λy.xyy)(λa.a)b

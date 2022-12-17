@@ -1,3 +1,1 @@
-:p - pprint
-:t - tree
-:r - repr
+## Lambdac - Lambda Calculus Compiler

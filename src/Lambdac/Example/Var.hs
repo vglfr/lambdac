@@ -4,6 +4,19 @@ module Lambdac.Example.Var where
 
 import Lambdac.Syntax (Expr, TExpr)
 
+{-
+
+xN  - expression
+xN' - expression type
+xNe - expression (reduced)
+xNt - expression type (reduced)
+xNp - expression pprint
+xNr - expression repr
+xNv - expression vtree
+xNh - expression htree
+
+-}
+
 -- x -> x
 
 v1 :: Expr
@@ -11,6 +24,12 @@ v1 = "x"
 
 v1' :: TExpr
 v1' = 0
+
+v1e :: Expr
+v1e = "x"
+
+v1t :: TExpr
+v1t = 0
 
 v1p :: String
 v1p = "x"
@@ -32,6 +51,12 @@ v2 = "x'"
 v2' :: TExpr
 v2' = 0
 
+v2e :: Expr
+v2e = "x'"
+
+v2t :: TExpr
+v2t = 0
+
 v2p :: String
 v2p = "x'"
 
@@ -51,6 +76,12 @@ v3 = "x''"
 
 v3' :: TExpr
 v3' = 0
+
+v3e :: Expr
+v3e = "x''"
+
+v3t :: TExpr
+v3t = 0
 
 v3p :: String
 v3p = "x''"

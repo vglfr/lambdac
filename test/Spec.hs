@@ -5,6 +5,7 @@ import Spec.Print.HTree (testPrintHTree)
 import Spec.Print.Repr (testPrintRepr)
 import Spec.Print.Show (testPrintShow)
 import Spec.Print.VTree (testPrintVTree)
+import Spec.Typechecker (testTypechecker)
 import Spec.Quickcheck
 
 import Test.Hspec
@@ -20,5 +21,6 @@ main = do
     testPrintRepr
     testPrintShow
     testPrintVTree
+    testTypechecker
 
   -- verboseCheck temp2

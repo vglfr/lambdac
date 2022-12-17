@@ -20,6 +20,12 @@ f1 = λ "x" ("x" ∘ "x" ∘ "x")
 f1' :: TExpr
 f1' = λ' 1 (1 • 1 • 1)
 
+f1e :: Expr
+f1e = λ "x" ("x" ∘ "x" ∘ "x")
+
+f1t :: TExpr
+f1t = undefined
+
 f1p :: String
 f1p = "λx.xxx"
 
@@ -48,17 +54,23 @@ f2 = λ "x" (λ "y" (λ "z" "x"))
 f2' :: TExpr
 f2' = λ' 1 (λ' 2 (λ' 3 1))
 
+f2e :: Expr
+f2e = undefined
+
+f2t :: TExpr
+f2t = undefined
+
 f2p :: String
 f2p = "λxyz.x"
 
 f2r :: String
-f2r = ""
+f2r = undefined
 
 f2v :: String
-f2v = ""
+f2v = undefined
 
 f2h :: String
-f2h = ""
+f2h = undefined
 
 {- λxyz.xyz -> λxyz.xyz
 
@@ -79,6 +91,54 @@ f3 = λ "x" (λ "y" (λ "z" ("x" ∘ "y" ∘ "z")))
 
 f3' :: TExpr
 f3' = λ' 1 (λ' 2 (λ' 3 (1 • 2 • 3)))
+
+f3e :: Expr
+f3e = undefined
+
+f3t :: TExpr
+f3t = undefined
+
+f3p :: String
+f3p = "λxyz.xyz"
+
+f3r :: String
+f3r = undefined
+
+f3v :: String
+f3v = undefined
+
+f3h :: String
+f3h = undefined
+
+{- λx.x -> λx.x
+
+  λ
+ / \
+x   x
+-}
+f4 :: Expr
+f4 = λ "x" "x"
+
+f4' :: TExpr
+f4' = λ' 0 0
+
+f4e :: Expr
+f4e = λ "x" "x"
+
+f4t :: TExpr
+f4t = undefined
+
+f4p :: String
+f4p = "λx.x"
+
+f4r :: String
+f4r = undefined
+
+f4v :: String
+f4v = undefined
+
+f4h :: String
+f4h = undefined
 
 -- λxy.xy
 -- λxy.xz

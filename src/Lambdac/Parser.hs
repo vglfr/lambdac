@@ -7,33 +7,35 @@ import Data.Foldable (foldl')
 import Data.Functor (($>))
 import Text.Parsec (Parsec, char, chainl1, many, many1, oneOf, parse, skipMany1, space, string, try, (<|>))
 
-data Repl
-  = PPrint Expr
-  | VTree Expr
-  | HTree Expr
-  | Repr Expr
-  | Eval Expr
+data Command
+  = PPrint Expr -- :p
+  | VTree Expr  -- :v
+  | HTree Expr  -- :h
+  | Repr Expr   -- :r
+  | Type Expr   -- :t
+  | Eval Expr   -- :e (default)
+  | Help        -- :h
   | NOP
 
-parseLine :: String -> IO Repl
-parseLine = pure . fromRight NOP . parse parseRepl ""
+parseLine :: String -> IO Command
+parseLine = pure . fromRight NOP . parse parseCommand ""
 
-parseRepl :: Parsec String () Repl
-parseRepl = try parsePPrint <|> try parseVTree <|> try parseHTree <|> try parseRepr <|> parseEval
+parseCommand :: Parsec String () Command
+parseCommand = try parsePPrint <|> try parseVTree <|> try parseHTree <|> try parseRepr <|> parseEval
 
-parsePPrint :: Parsec String () Repl
+parsePPrint :: Parsec String () Command
 parsePPrint = string ":p " >> PPrint <$> parseExpr
 
-parseHTree :: Parsec String () Repl
+parseHTree :: Parsec String () Command
 parseHTree = string ":h " >> HTree <$> parseExpr
 
-parseVTree :: Parsec String () Repl
+parseVTree :: Parsec String () Command
 parseVTree = string ":v " >> VTree <$> parseExpr
 
-parseRepr :: Parsec String () Repl
+parseRepr :: Parsec String () Command
 parseRepr = string ":r " >> Repr <$> parseExpr
 
-parseEval :: Parsec String () Repl
+parseEval :: Parsec String () Command
 parseEval = Eval <$> parseExpr
 
 parseExpr :: Parsec String () Expr
