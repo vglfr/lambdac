@@ -3,21 +3,23 @@
 module Spec.Print.Show where
 
 import Lambdac.Example.Abs (f1, f1p)
+import Lambdac.Example.App (a1, a1p)
+import Lambdac.Example.Var (v1, v2, v3, v1p, v2p, v3p)
 import Lambdac.Print.Show ()
-import Lambdac.Syntax (Expr (Var), λ, (∘))
+import Lambdac.Syntax (Expr, λ, (∘))
 
 import Test.Hspec (Spec, describe, it, shouldBe)
 
 testPrintShow :: Spec
 testPrintShow = describe "Lambdac.Print.Show" $ do
-  it "show Var - base" $ do
-    show (Var "x") `shouldBe` "x"
+  it "show Var v1 (x)" $ do
+    show v1 `shouldBe` v1p
 
-  it "show Var - one prime" $ do
-    show (Var "x'") `shouldBe` "x'"
+  it "show Var v2 (x')" $ do
+    show v2 `shouldBe` v2p
 
-  it "show Var - two primes" $ do
-    show (Var "x''") `shouldBe` "x''"
+  it "show Var v3 (x'')" $ do
+    show v3 `shouldBe` v3p
 
   it "show Abs - one argument" $ do
     show (λ "x" "x") `shouldBe` "λx.x"
@@ -49,11 +51,11 @@ testPrintShow = describe "Lambdac.Print.Show" $ do
   it "show Abs - λxyz.x(λuv.vw)z" $ do
     show (λ "x" (λ "y" (λ "z" ("x" ∘ λ "u" (λ "v" ("v" ∘ "w")) ∘ "z")))) `shouldBe` "λxyz.x(λuv.vw)z"
 
-  it "show Abs - λx.xxx - f1" $ do
+  it "show Abs f1 (λx.xxx)" $ do
     show f1 `shouldBe` f1p
 
-  it "show App - two variables" $ do
-    show ("x" ∘ "y") `shouldBe` "x y"
+  it "show App a1 (x x)" $ do
+    show a1 `shouldBe` a1p
 
   it "show App - three variables" $ do
     show ("x" ∘ "y" ∘ "z") `shouldBe` "x y z"

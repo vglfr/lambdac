@@ -2,8 +2,7 @@
 
 module Lambdac.Example.App where
 
-import Lambdac.Syntax
-import Lambdac.Typechecker
+import Lambdac.Syntax (Expr, TExpr, λ, λ', (∘), (•))
 
 {- x x -> x x
 
@@ -16,6 +15,18 @@ a1 = "x" ∘ "x"
 
 a1' :: TExpr
 a1' = 0 • 0
+
+a1p :: String
+a1p = "x x"
+
+a1r :: String
+a1r = "(App (Var \"x\") (Var \"x\"))"
+
+a1v :: String
+a1v = "x @ x"
+
+a1h :: String
+a1h = "  @\n\ESC[30m / \\\ESC[m\nx   x"
 
 {- x x x -> x x x
 
@@ -30,6 +41,18 @@ a2 = "x" ∘ "x" ∘ "x"
 
 a2' :: TExpr
 a2' = 0 • 0 • 0
+
+a2p :: String
+a2p = "x x x"
+
+a2r :: String
+a2r = ""
+
+a2v :: String
+a2v = ""
+
+a2h :: String
+a2h = ""
 
 {- λx.x x -> x
 

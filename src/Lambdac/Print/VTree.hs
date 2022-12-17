@@ -2,6 +2,7 @@
 
 module Lambdac.Print.VTree where
 
+import Data.List.Extra (trimEnd)
 import Lambdac.Print.Show ()
 import Lambdac.Syntax (Expr (..))
 
@@ -15,7 +16,7 @@ vtree :: Expr -> String
 vtree e = go [] [(e,0)] []
  where
   go :: [String] -> Stack -> Glyphs -> String
-  go ls [] _  = unlines . reverse $ ls
+  go ls [] _  = trimEnd . unlines . reverse $ ls
   go ls fs gs = let (l,fs',gs') = line fs gs
                  in go (l : ls) fs' gs'
 

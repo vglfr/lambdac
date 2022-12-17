@@ -80,7 +80,9 @@ plot s f t = trimEnd . unlines $ go 0
     | s == Pipe = let hh = replicate (n-1) '─' 
                    in "┌" ++ hh ++ "┴" ++ hh ++ "┐"
 
-  grey s = "\ESC[30m" ++ s ++ "\ESC[m"
+  grey s = if null s
+           then s
+           else "\ESC[30m" ++ s ++ "\ESC[m"
   
 build :: Expr -> DTree PElem
 build = go 0 Nothing

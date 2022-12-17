@@ -2,8 +2,9 @@
 
 module Spec.Parser where
 
+import Lambdac.Example.Var (v1, v2, v3, v1p, v2p, v3p)
 import Lambdac.Parser (parseAbs, parseApp, parseVar)
-import Lambdac.Print.Show
+import Lambdac.Print.Show ()
 import Lambdac.Syntax (Expr (Var), λ, (∘))
 
 import Data.ByteString as BS
@@ -21,14 +22,14 @@ testParseVar :: Spec
 testParseVar = describe "Lambdac.Parser - Var" $ do
   let parseVar' = parse (parseVar <* eof) "Error parsing variable"
 
-  it "parseVar - one letter (v1)" $ do
-    parseVar' "x" `shouldBe` Right (Var "x")
+  it "parseVar v1 (x)" $ do
+    parseVar' v1p `shouldBe` Right v1
 
-  it "parseVar - one prime" $ do
-    parseVar' "x'" `shouldBe` Right (Var "x'")
+  it "parseVar v2 (x')" $ do
+    parseVar' v2p `shouldBe` Right v2
 
-  it "parseVar - two prime" $ do
-    parseVar' "x''" `shouldBe` Right (Var "x''")
+  it "parseVar v3 (x'')" $ do
+    parseVar' v3p `shouldBe` Right v3
 
   it "parseVar - two letters" $ do
     parseVar' "xy" `shouldSatisfy` isLeft
@@ -38,6 +39,8 @@ testParseVar = describe "Lambdac.Parser - Var" $ do
 
   it "parseVar - lambda" $ do
     parseVar' "λ" `shouldSatisfy` isLeft
+
+  -- @ (whitespace) ?
 
 testParseAbs :: Spec
 testParseAbs = describe "Lambdac.Parser - Abs" $ do
