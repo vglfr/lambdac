@@ -19,7 +19,6 @@ library
   import:
     common
   exposed-modules:
-    Lambdac
     Lambdac.Combinators
     Lambdac.Example.Abs
     Lambdac.Example.App
