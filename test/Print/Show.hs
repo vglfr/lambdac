@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Spec.Print.Show where
+module Print.Show where
 
 import Lambdac.Example.Abs (f1, f1p)
 import Lambdac.Example.App (a1, a1p)

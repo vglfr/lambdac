@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Spec.Interpreter where
+module Interpreter where
 
 import Lambdac.Example.Abs (f4, f5, f4e, f5e)
 import Lambdac.Example.App

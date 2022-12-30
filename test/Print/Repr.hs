@@ -1,4 +1,4 @@
-module Spec.Print.Repr where
+module Print.Repr where
 
 import Lambdac.Example.Abs (f1, f1r)
 import Lambdac.Example.App (a1, a1r)

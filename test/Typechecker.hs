@@ -1,4 +1,4 @@
-module Spec.Typechecker where
+module Typechecker where
 
 import Lambdac.Example.Var (v1, v2, v3, v1', v2', v3', v1t, v2t, v3t)
 import Lambdac.Typechecker (tcheck, ttree)

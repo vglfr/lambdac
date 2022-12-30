@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Spec.Parser where
+module Parser where
 
 import Lambdac.Example.Var (v1, v2, v3, v1p, v2p, v3p)
 import Lambdac.Parser (parseAbs, parseApp, parseVar)

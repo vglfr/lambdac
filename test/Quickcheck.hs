@@ -1,4 +1,4 @@
-module Spec.Quickcheck where
+module Quickcheck where
 
 import Control.Applicative
 

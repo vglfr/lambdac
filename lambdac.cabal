@@ -56,16 +56,16 @@ test-suite lambdac-test
   hs-source-dirs:
     test
   main-is:
-    Spec.hs
+    Main.hs
   other-modules:
     Paths_lambdac
-    Spec.Interpreter
-    Spec.Parser
-    Spec.Print.HTree
-    Spec.Print.Repr
-    Spec.Print.Show
-    Spec.Print.VTree
-    Spec.Typechecker
-    Spec.Quickcheck
+    Interpreter
+    Parser
+    Print.HTree
+    Print.Repr
+    Print.Show
+    Print.VTree
+    Typechecker
+    Quickcheck
   type:
     exitcode-stdio-1.0

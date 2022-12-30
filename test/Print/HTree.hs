@@ -1,4 +1,4 @@
-module Spec.Print.HTree where
+module Print.HTree where
 
 import Lambdac.Example.Abs (f1, f1h)
 import Lambdac.Example.App (a1, a1h)
